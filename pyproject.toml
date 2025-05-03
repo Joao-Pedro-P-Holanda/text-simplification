@@ -1,0 +1,15 @@
+[project]
+name = "text-simplification-api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "gloe>=0.7.0",
+    "httpx>=0.28.1",
+    "langchain[openai]>=0.3.24",
+    "pymupdf>=1.25.5",
+    "pymupdf4llm>=0.0.22",
+    "python-dotenv>=1.1.0",
+    "python-multipart>=0.0.20",
+]
