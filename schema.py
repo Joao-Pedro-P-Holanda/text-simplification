@@ -1,12 +1,14 @@
 from typing import Literal, TypedDict
 from pydantic import BaseModel, SecretStr
 
-ModelOptions = Literal["cow/gemma2_tools:2b"]
+ModelOptions = Literal["cow/gemma2_tools:2b", "gemini-2.5-flash-preview-04-17"]
 
 
 class Config(TypedDict):
     models: set[ModelOptions]
     llm_api_key: SecretStr
+    gemini_api_key: SecretStr
+    gemini_base_url: str
     llm_url: str
     notices_url: str
 

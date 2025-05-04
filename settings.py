@@ -56,6 +56,8 @@ prompt = read_prompt_file("./prompt_simplify_document.txt")
 config: Config = {
     "models": {"cow/gemma2_tools:2b"},
     "llm_api_key": SecretStr(os.environ["LLM_API_KEY"]),
+    "gemini_api_key": SecretStr(os.environ["GEMINI_API_KEY"]),
+    "gemini_base_url": "https://generativelanguage.googleapis.com/v1beta/models/",
     "llm_url": "http://ollama.atlab.ufc.br:8080/ollama/api/generate",
     "notices_url": "https://parquetecnologico.ufc.br/pt/edital/",
 }
