@@ -16,6 +16,12 @@ def process_pdf_tables(): ...
 
 
 @transformer
+def read_markdown_file(path: str) -> str:
+    with open(path, "r") as file:
+        return "".join(file.readlines())
+
+
+@transformer
 def convert_pdf_file_to_markdown_text(path: str) -> str:
     logger.info(f"Converting pdf file at {path} to markdown text")
     text = pymupdf4llm.to_markdown(f"data/{path}")

@@ -1,10 +1,13 @@
 from pathlib import Path
 import os
 
-from settings import config
+
+from metrics_steps import extract_sentence_statistics
+from settings import config, load_spacy_model
 from file_processing_steps import (
     convert_markdown_text_to_markdown_file,
     convert_pdf_file_to_markdown_text,
+    read_markdown_file,
 )
 from request_steps import (
     create_prompt_from_target_text,
@@ -12,6 +15,8 @@ from request_steps import (
 )
 
 DATA_DIR = Path(os.path.join(os.path.dirname(__file__), "data"))
+
+nlp = load_spacy_model("pt_core_news_lg")
 
 
 simplify_pdf_file_with_self_hosted_model = (
@@ -34,4 +39,8 @@ simplify_pdf_file_with_api_model = (
         token=config["gemini_api_key"].get_secret_value(),
     )
     >> convert_markdown_text_to_markdown_file("./result/converted_gemini.md")
+)
+
+extract_metrics_from_saved_text = read_markdown_file >> extract_sentence_statistics(
+    nlp=nlp
 )

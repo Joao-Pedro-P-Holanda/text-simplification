@@ -2,6 +2,7 @@
 from functools import lru_cache
 import logging.config
 import os
+import spacy
 from dotenv import load_dotenv
 from pydantic import SecretStr
 from schema import Config
@@ -48,6 +49,11 @@ _ = load_dotenv()
 def read_prompt_file(path: str):
     with open(path) as file:
         return "".join(file.readlines())
+
+
+@lru_cache
+def load_spacy_model(name: str):
+    return spacy.load(name)
 
 
 prompt = read_prompt_file("./prompt_simplify_document.txt")

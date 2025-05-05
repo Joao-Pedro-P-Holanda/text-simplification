@@ -23,7 +23,7 @@ class ChatMessageResponseBody(BaseModel):
 
 class StatisticsMetrics(BaseModel):
     number_of_sentences: int
-    average_sentence_length: int
+    average_sentence_length: float
     hapax_legomena_count: int
 
 
