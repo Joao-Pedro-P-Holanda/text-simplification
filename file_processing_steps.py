@@ -1,4 +1,6 @@
+import csv
 import logging
+from typing import Iterable
 from gloe import partial_transformer, transformer
 import pathlib
 import pymupdf4llm
@@ -8,6 +10,24 @@ from schema import Document, DocumentResultModel, DocumentType
 
 logger = logging.getLogger(__name__)
 
+
+@partial_transformer
+def store_results_as_csv(
+    results: Iterable[DocumentResultModel], doc_type: DocumentType
+):
+    store_path = f"./result/{doc_type}.csv"
+
+    with open(store_path, "w") as f:
+        writer = csv.DictWriter(f, fieldnames=None)  # type:ignore
+
+        for i, result in enumerate(results):
+            data = result.model_dump()
+            if i == 0:
+                writer.fieldnames = data.keys()
+
+                writer.writeheader()
+
+            writer.writerow(data)
 
 
 @transformer
