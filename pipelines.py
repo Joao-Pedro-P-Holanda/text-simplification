@@ -1,19 +1,21 @@
-from pathlib import Path
 import os
+from pathlib import Path
 
+from gloe import Transformer
+from gloe.collection import Map
 
-from metrics_steps import extract_document_statistics
-from settings import config, load_spacy_model
 from file_processing_steps import (
     convert_markdown_text_to_markdown_file,
     convert_pdf_file_to_markdown_text,
     read_markdown_file,
+    store_results_as_csv,
 )
-from metrics_steps import list_complex_words
+from metrics_steps import extract_document_statistics, list_complex_words
 from request_steps import (
     create_prompt_from_target_text,
     request_simplfied_text_from_self_hosted,
 )
+from settings import config, load_spacy_model
 
 DATA_DIR = Path(os.path.join(os.path.dirname(__file__), "data"))
 
@@ -42,8 +44,8 @@ simplify_pdf_file_with_api_model = (
     >> convert_markdown_text_to_markdown_file("./result/converted_gemini_2.md")
 )
 
-extract_metrics_from_saved_text = (
+extract_metrics_from_saved_texts: Transformer[list[str], None] = Map(
     read_markdown_file
-    >> list_complex_words("./data/frequencias_todos_os_corpora.pkl")
+    >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
     >> extract_document_statistics(nlp=nlp)
-)
+) >> store_results_as_csv(doc_type="generated_simplified")
