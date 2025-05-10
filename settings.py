@@ -53,7 +53,9 @@ def read_prompt_file(path: str):
 
 @lru_cache
 def load_spacy_model(name: str):
-    return spacy.load(name)
+    result = spacy.load(name)
+    result.add_pipe("syllables", after="morphologizer", config={"lang": "pt_BR"})
+    return result
 
 
 prompt = read_prompt_file("./prompt_simplify_document.txt")

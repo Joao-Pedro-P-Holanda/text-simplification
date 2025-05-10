@@ -14,6 +14,7 @@ dependencies = [
     "python-dotenv>=1.1.0",
     "python-multipart>=0.0.20",
     "spacy>=3.8.5",
+    "spacy-syllables>=3.0.2",
 ]
 
 [tool.uv.sources]

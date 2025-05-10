@@ -670,6 +670,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pyphen"
+version = "0.17.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/69/56/e4d7e1bd70d997713649c5ce530b2d15a5fc2245a74ca820fc2d51d89d4d/pyphen-0.17.2.tar.gz", hash = "sha256:f60647a9c9b30ec6c59910097af82bc5dd2d36576b918e44148d8b07ef3b4aa3", size = 2079470 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7b/1f/c2142d2edf833a90728e5cdeb10bdbdc094dde8dbac078cee0cf33f5e11b/pyphen-0.17.2-py3-none-any.whl", hash = "sha256:3a07fb017cb2341e1d9ff31b8634efb1ae4dc4b130468c7c39dd3d32e7c3affd", size = 2079358 },
+]
+
+[[package]]
 name = "python-dotenv"
 version = "1.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -861,6 +870,19 @@ wheels = [
 ]
 
 [[package]]
+name = "spacy-syllables"
+version = "3.0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pyphen" },
+    { name = "spacy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/15/9a/b94b12188ef0a08e5b87ab95f2f4018365ade7ff36ba22496e6af1c98b21/spacy_syllables-3.0.2.tar.gz", hash = "sha256:1f45a8307382daa0c65d32a996d84bd5dd90552f42e675f721342c35ba3d032b", size = 4673 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bc/c0/412775c4db008df8f5d3887e0d96fa4d14306b9ba8ae257c21aa98a3ec4b/spacy_syllables-3.0.2-py3-none-any.whl", hash = "sha256:0c67cfc086624c643f510bb05c53c93c323de4357761b500ce8d9e48942618ed", size = 5066 },
+]
+
+[[package]]
 name = "sqlalchemy"
 version = "2.0.40"
 source = { registry = "https://pypi.org/simple" }
@@ -922,6 +944,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "python-multipart" },
     { name = "spacy" },
+    { name = "spacy-syllables" },
 ]
 
 [package.metadata]
@@ -935,6 +958,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.1.0" },
     { name = "python-multipart", specifier = ">=0.0.20" },
     { name = "spacy", specifier = ">=3.8.5" },
+    { name = "spacy-syllables", specifier = ">=3.0.2" },
 ]
 
 [[package]]
