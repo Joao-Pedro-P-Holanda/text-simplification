@@ -6,6 +6,9 @@ import spacy
 from dotenv import load_dotenv
 from pydantic import SecretStr
 from schema import Config
+import spacy_syllables
+
+_ = spacy_syllables
 
 logging_config = {
     "version": 1,
