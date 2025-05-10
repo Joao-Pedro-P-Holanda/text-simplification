@@ -1,7 +1,11 @@
 from typing import Literal, TypedDict
 from pydantic import BaseModel, SecretStr, computed_field
+from pathlib import Path
 
 ModelOptions = Literal["cow/gemma2_tools:2b", "gemini-2.5-flash-preview-04-17"]
+DocumentType = Literal[
+    "reference_complete", "reference_simplified", "generated_simplified"
+]
 
 
 class Config(TypedDict):
@@ -13,15 +17,64 @@ class Config(TypedDict):
     notices_url: str
 
 
-class ChatMessageRequestBody(BaseModel):
+class Document(BaseModel):
+    path: str
     text: str
 
+    @computed_field
+    @property
+    def name(self) -> str:
+        return Path(self.path).stem
 
-class ChatMessageResponseBody(BaseModel):
-    text: str
+    @computed_field
+    @property
+    def id(self) -> int:
+        splits = self.name.split("_")
+
+        return int(splits[0])
 
 
-class DocumentStatistics(BaseModel):
+class DocumentResultModel(BaseModel):
+    id: int
+    name: str
+
+
+class DSARIMetrics(DocumentResultModel):
+    f_keep: float
+    f_add: float
+    p_del: float
+
+    d_keep: float
+    d_add: float
+    d_del: float
+
+    sari: float
+    d_sari: float
+
+
+class NILCMetrics(DocumentResultModel):
+    sentences_per_paragraph: float
+    passive_ratio: float
+    postponed_subject_ratio: float
+    non_svo_ratio: float
+    sentences_with_one_clause: float
+    sentences_with_seven_more_clauses: float
+    words_before_main_verb: float
+    content_word_max: float
+    content_word_min: float
+    function_words: float
+    ratio_function_to_content_words: float
+    adjectives_ambiguity: float
+    adverbs_ambiguity: float
+    nouns_ambiguity: float
+    verbs_ambiguity: float
+    content_words_ambiguity: float
+    simple_word_ratio: float
+    coreference_pronoun_ratio: float
+    demonstrative_pronoun_ratio: float
+
+
+class DocumentStatistics(DocumentResultModel):
     """
     This class describes the most used readability techniques with their constants
     modified to better suit Brazilian Portuguese, as describe in the alt system.
@@ -89,12 +142,3 @@ class DocumentStatistics(BaseModel):
     @property
     def average_sylables_word(self) -> float:
         return self.number_of_syllables / self.number_of_tokens
-
-
-class MorfologyMetrics(BaseModel): ...
-
-
-class SyntaxMetrics(BaseModel): ...
-
-
-class SemanticMetrics(BaseModel): ...

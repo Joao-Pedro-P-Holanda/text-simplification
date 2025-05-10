@@ -4,7 +4,10 @@ import pathlib
 import pymupdf4llm
 import os
 
+from schema import Document, DocumentResultModel, DocumentType
+
 logger = logging.getLogger(__name__)
+
 
 
 @transformer
@@ -16,9 +19,11 @@ def process_pdf_tables(): ...
 
 
 @transformer
-def read_markdown_file(path: str) -> str:
+def read_markdown_file(path: str) -> Document:
     with open(path, "r") as file:
-        return "".join(file.readlines())
+        text = "".join(file.readlines())
+
+    return Document(path=path, text=text)
 
 
 @transformer
