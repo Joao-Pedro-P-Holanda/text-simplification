@@ -9,6 +9,8 @@ import httpx
 from utils import is_valid_word
 import settings
 
+_ = settings
+
 MAX_WORDS_SELECTED = 5000
 
 logger = logging.getLogger(__name__)
