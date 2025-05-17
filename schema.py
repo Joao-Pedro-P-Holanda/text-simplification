@@ -11,10 +11,7 @@ DocumentType = Literal[
 class Config(TypedDict):
     models: set[ModelOptions]
     llm_api_key: SecretStr
-    gemini_api_key: SecretStr
-    gemini_base_url: str
     llm_url: str
-    notices_url: str
 
 
 class Document(BaseModel):
