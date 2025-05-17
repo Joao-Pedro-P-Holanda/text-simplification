@@ -1,51 +1,65 @@
 import os
 from pathlib import Path
+from typing import Any
 
 from gloe import Transformer
+from gloe.utils import forward
 from gloe.collection import Map
 
 from file_processing_steps import (
-    convert_markdown_text_to_markdown_file,
+    save_document_text_on_markdown_file,
     convert_pdf_file_to_markdown_text,
     read_markdown_file,
     store_results_as_csv,
 )
 from metrics_steps import extract_document_statistics, list_complex_words
 from request_steps import (
-    create_prompt_from_target_text,
-    request_simplfied_text_from_self_hosted,
+    request_simplfied_text_from_chat_model,
 )
-from settings import config, load_spacy_model
+from schema import ModelOptions
+from settings import load_spacy_model
+from utils import zip_to_one, pick_first, pick_second
 
 DATA_DIR = Path(os.path.join(os.path.dirname(__file__), "data"))
 
 nlp = load_spacy_model("pt_core_news_lg")
 
 
-simplify_pdf_file_with_self_hosted_model = (
-    convert_pdf_file_to_markdown_text
-    >> create_prompt_from_target_text
-    >> request_simplfied_text_from_self_hosted(
-        url=config["llm_url"],
-        model="cow/gemma2_tools:2b",
-        token=config["llm_api_key"].get_secret_value(),
+simplify_pdf_files_with_model: Transformer[
+    tuple[list[str], ModelOptions], list[Any]
+] = (
+    zip_to_one
+    >> (
+        Map(
+            forward[tuple[str, ModelOptions]]()
+            >> (
+                pick_first >> convert_pdf_file_to_markdown_text,
+                pick_second,
+            )
+        )
     )
-    >> convert_markdown_text_to_markdown_file("./result/converted_2.md")
+    >> Map(
+        request_simplfied_text_from_chat_model(
+            prompt_file="prompt_simplify_document.txt"
+        )
+        >> save_document_text_on_markdown_file
+    )
 )
 
-simplify_pdf_file_with_api_model = (
-    convert_pdf_file_to_markdown_text
-    >> create_prompt_from_target_text
-    >> request_simplfied_text_from_self_hosted(
-        url=config["gemini_base_url"],
-        model="gemini-2.5-flash-preview-04-17",
-        token=config["gemini_api_key"].get_secret_value(),
-    )
-    >> convert_markdown_text_to_markdown_file("./result/converted_gemini_2.md")
-)
-
-extract_metrics_from_saved_texts: Transformer[list[str], None] = Map(
+extract_metrics_from_generated_texts: Transformer[list[str], None] = Map(
     read_markdown_file
     >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
     >> extract_document_statistics(nlp=nlp)
-) >> store_results_as_csv(doc_type="generated_simplified")
+) >> store_results_as_csv(doc_type="generated-simplified")
+
+extract_metrics_from_complete_texts: Transformer[list[str], None] = Map(
+    read_markdown_file
+    >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
+    >> extract_document_statistics(nlp=nlp)
+) >> store_results_as_csv(doc_type="reference-complete")
+
+extract_metrics_from_already_simplfied_texts: Transformer[list[str], None] = Map(
+    read_markdown_file
+    >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
+    >> extract_document_statistics(nlp=nlp)
+) >> store_results_as_csv(doc_type="reference-simplified")
