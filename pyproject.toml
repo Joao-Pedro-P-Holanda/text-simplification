@@ -15,6 +15,15 @@ dependencies = [
     "python-multipart>=0.0.20",
     "spacy>=3.8.5",
     "spacy-syllables>=3.0.2",
+    "ipykernel>=6.29.5",
+    "pandas>=2.2.3",
+    "matplotlib>=3.10.3",
+    "langchain-google-genai>=2.1.4",
+    "langchain-ollama>=0.3.2",
+    "sentence-transformers>=4.1.0",
+    "einops>=0.8.1",
+    "bert-score>=0.3.13",
+    "md2pdf>=1.0.1",
 ]
 
 [tool.uv.sources]
