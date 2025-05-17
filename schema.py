@@ -37,6 +37,7 @@ class Document(BaseModel):
 class DocumentResultModel(BaseModel):
     id: int
     name: str
+    model: str
 
 
 class DSARIMetrics(DocumentResultModel):

@@ -5,7 +5,10 @@ import spacy
 from gloe import partial_transformer, transformer
 from spacy.matcher import Matcher
 
-from schema import Document, DocumentStatistics
+from schema import (
+    Document,
+    DocumentStatistics,
+)
 from utils import is_valid_word
 
 
@@ -48,6 +51,7 @@ def extract_document_statistics(
         hapax_legomena_count=hapax_legomena,
         max_sentence_length=max_sentence_length,
         number_of_syllables=num_syllables,
+        model=nlp.meta["name"],
     )
 
 
