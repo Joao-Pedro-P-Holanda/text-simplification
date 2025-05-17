@@ -1,12 +1,14 @@
 import csv
 import logging
-from typing import Iterable
-from gloe import partial_transformer, transformer
-import pathlib
-import pymupdf4llm
 import os
+import pathlib
+from typing import Iterable
 
-from schema import Document, DocumentResultModel, DocumentType
+import pymupdf
+import pymupdf4llm
+from gloe import partial_transformer, transformer
+
+from schema import Document, DocumentResultModel, DocumentType, ModelOptions
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +17,7 @@ logger = logging.getLogger(__name__)
 def store_results_as_csv(
     results: Iterable[DocumentResultModel], doc_type: DocumentType
 ):
-    store_path = f"./result/{doc_type}.csv"
+    store_path = f"./result//{doc_type}.csv"
 
     with open(store_path, "w") as f:
         writer = csv.DictWriter(f, fieldnames=None)  # type:ignore
@@ -31,14 +33,6 @@ def store_results_as_csv(
 
 
 @transformer
-def process_pdf_images(): ...
-
-
-@transformer
-def process_pdf_tables(): ...
-
-
-@transformer
 def read_markdown_file(path: str) -> Document:
     with open(path, "r") as file:
         text = "".join(file.readlines())
@@ -47,25 +41,33 @@ def read_markdown_file(path: str) -> Document:
 
 
 @transformer
-def convert_pdf_file_to_markdown_text(path: str) -> str:
+def convert_pdf_file_to_markdown_text(path: str) -> Document:
     logger.info(f"Converting pdf file at {path} to markdown text")
-    text = pymupdf4llm.to_markdown(f"data/{path}")
+    text = pymupdf4llm.to_markdown(path)
 
-    return text
+    return Document(text=text, path=path)
 
 
+# TODO: don't make paths hardcoded
 @transformer
 def convert_pdf_file_to_markdown_file(path: str) -> pathlib.Path:
     text = pymupdf4llm.to_markdown(f"data/{path}")
+    as_sys_path = pathlib.Path("./result") / pathlib.Path(path)
 
-    output = pathlib.Path("./result") / pathlib.Path(path).name
+    as_sys_path.parent.mkdir(parents=True, exist_ok=True)
+
+    output = as_sys_path.with_suffix(".md")
     output.write_bytes(text.encode())
 
     return output
 
 
-@partial_transformer
-def convert_markdown_text_to_markdown_file(content: str, output_path: str):
-    os.makedirs("./result", exist_ok=True)
-    with open(output_path, "w") as file:
-        file.write(content)
+@transformer
+def save_document_text_on_markdown_file(
+    input: tuple[Document, str],
+) -> None:
+    document, model = input
+
+    os.makedirs(f"./result/{model}", exist_ok=True)
+    with open(f"./result/{model}/{document.name}.md", "w") as file:
+        file.write(document.text)

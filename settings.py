@@ -49,26 +49,14 @@ _ = load_dotenv()
 
 
 @lru_cache
-def read_prompt_file(path: str):
-    with open(path) as file:
-        return "".join(file.readlines())
-
-
-@lru_cache
 def load_spacy_model(name: str):
     result = spacy.load(name)
     result.add_pipe("syllables", after="morphologizer", config={"lang": "pt_BR"})
     return result
 
 
-prompt = read_prompt_file("./prompt_simplify_document.txt")
-
-
 config: Config = {
     "models": {"cow/gemma2_tools:2b"},
     "llm_api_key": SecretStr(os.environ["LLM_API_KEY"]),
-    "gemini_api_key": SecretStr(os.environ["GEMINI_API_KEY"]),
-    "gemini_base_url": "https://generativelanguage.googleapis.com/v1beta/models/",
     "llm_url": "http://ollama.atlab.ufc.br:8080/ollama/api/generate",
-    "notices_url": "https://parquetecnologico.ufc.br/pt/edital/",
 }
