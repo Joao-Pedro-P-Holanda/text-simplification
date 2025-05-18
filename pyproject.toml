@@ -25,6 +25,7 @@ dependencies = [
     "bert-score>=0.3.13",
     "md2pdf>=1.0.1",
     "beautifulsoup4>=4.13.4",
+    "torch>=2.7.0",
 ]
 
 [tool.uv.sources]

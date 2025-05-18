@@ -2,7 +2,6 @@ from functools import lru_cache
 import logging
 
 from gloe import partial_transformer
-from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain_core.language_models import BaseChatModel
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -18,12 +17,11 @@ logger = logging.getLogger(__name__)
 def request_simplfied_text_from_chat_model(
     input: tuple[Document, ModelOptions], prompt_file: str
 ) -> tuple[Document, str]:
-    logger.info("Requesting API for simplified text")
-
     document, model = input
 
     llm_chain = _read_prompt_file(prompt_file) | _llm_for_model_name(model)
 
+    logger.info(f"Requesting API for simplified text of file {document.name}")
     response = llm_chain.invoke({"text": document.text})
 
     return document.model_copy(update={"text": response.text()}), model

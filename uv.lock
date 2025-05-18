@@ -2080,6 +2080,7 @@ dependencies = [
     { name = "sentence-transformers" },
     { name = "spacy" },
     { name = "spacy-syllables" },
+    { name = "torch" },
 ]
 
 [package.metadata]
@@ -2104,6 +2105,7 @@ requires-dist = [
     { name = "sentence-transformers", specifier = ">=4.1.0" },
     { name = "spacy", specifier = ">=3.8.5" },
     { name = "spacy-syllables", specifier = ">=3.0.2" },
+    { name = "torch", specifier = ">=2.7.0" },
 ]
 
 [[package]]

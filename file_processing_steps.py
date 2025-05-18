@@ -4,11 +4,10 @@ import os
 import pathlib
 from collections.abc import Iterable
 
-import pymupdf
 import pymupdf4llm
 from gloe import partial_transformer, transformer
 
-from schema import Document, DocumentResultModel, DocumentType, ModelOptions, TaskType
+from schema import Document, DocumentResultModel, DocumentType, TaskType
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +55,7 @@ def convert_pdf_file_to_markdown_text(path: str) -> Document:
 # TODO: don't make paths hardcoded
 @transformer
 def convert_pdf_file_to_markdown_file(path: str) -> pathlib.Path:
-    text = pymupdf4llm.to_markdown(f"data/{path}")
+    text = pymupdf4llm.to_markdown(path)
     as_sys_path = pathlib.Path("./result") / pathlib.Path(path)
 
     as_sys_path.parent.mkdir(parents=True, exist_ok=True)

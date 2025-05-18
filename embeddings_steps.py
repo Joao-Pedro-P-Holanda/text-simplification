@@ -2,6 +2,9 @@ from gloe import partial_transformer
 from sentence_transformers import SentenceTransformer
 
 from schema import Document, EmbeddingCosineSimilarity, EmbeddingModelOptions
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @partial_transformer
@@ -10,6 +13,9 @@ def compare_embedded_sentences_similarity(
 ) -> EmbeddingCosineSimilarity:
     model = SentenceTransformer(model_name, trust_remote_code=True)
 
+    logger.info(
+        f"Comparing embedding of files {sentences[0].name} and {sentences[1].name}"
+    )
     embeddings = model.encode(
         [sentences[0].text, sentences[1].text], prompt_name="passage"
     )

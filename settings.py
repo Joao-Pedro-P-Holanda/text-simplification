@@ -41,6 +41,7 @@ logging_config = {
         ],
         "level": "DEBUG",
     },
+    "loggers": {"httpx": {"handlers": ["console"], "level": "DEBUG"}},
 }
 
 logging.config.dictConfig(logging_config)
@@ -58,5 +59,5 @@ def load_spacy_model(name: str):
 config: Config = {
     "models": {"cow/gemma2_tools:2b"},
     "llm_api_key": SecretStr(os.environ["LLM_API_KEY"]),
-    "llm_url": "http://ollama.atlab.ufc.br:8080/ollama/api/generate",
+    "llm_url": "http://ollama.atlab.ufc.br:8080/ollama/",
 }
