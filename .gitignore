@@ -13,6 +13,7 @@ wheels/
 .log
 .env
 
+data
 result
 
 .idea
