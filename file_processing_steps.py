@@ -2,22 +2,27 @@ import csv
 import logging
 import os
 import pathlib
-from typing import Iterable
+from collections.abc import Iterable
 
 import pymupdf
 import pymupdf4llm
 from gloe import partial_transformer, transformer
 
-from schema import Document, DocumentResultModel, DocumentType, ModelOptions
+from schema import Document, DocumentResultModel, DocumentType, ModelOptions, TaskType
 
 logger = logging.getLogger(__name__)
 
 
 @partial_transformer
 def store_results_as_csv(
-    results: Iterable[DocumentResultModel], doc_type: DocumentType
+    results: Iterable[DocumentResultModel],
+    task_type: TaskType,
+    doc_type: DocumentType | None = None,
 ):
-    store_path = f"./result//{doc_type}.csv"
+    store_path = pathlib.Path(
+        f"./result/{task_type}{'/' + doc_type if doc_type else '/result'}.csv"
+    )
+    os.makedirs(store_path.parent, exist_ok=True)
 
     with open(store_path, "w") as f:
         writer = csv.DictWriter(f, fieldnames=None)  # type:ignore
@@ -62,12 +67,14 @@ def convert_pdf_file_to_markdown_file(path: str) -> pathlib.Path:
     return output
 
 
-@transformer
+@partial_transformer
 def save_document_text_on_markdown_file(
-    input: tuple[Document, str],
+    input: tuple[Document, str], doc_type: DocumentType
 ) -> None:
     document, model = input
 
-    os.makedirs(f"./result/{model}", exist_ok=True)
-    with open(f"./result/{model}/{document.name}.md", "w") as file:
+    os.makedirs(f"./result/text-simplification/{doc_type}/{model}", exist_ok=True)
+    with open(
+        f"./result/text-simplification/{doc_type}/{model}/{document.name}.md", "w"
+    ) as file:
         file.write(document.text)

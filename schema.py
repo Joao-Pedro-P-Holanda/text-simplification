@@ -3,8 +3,18 @@ from pydantic import BaseModel, SecretStr, computed_field
 from pathlib import Path
 
 ModelOptions = Literal["cow/gemma2_tools:2b", "gemini-2.5-flash-preview-04-17"]
+
+EmbeddingModelOptions = Literal["nomic-ai/nomic-embed-text-v2-moe"]
+
 DocumentType = Literal[
-    "reference_complete", "reference_simplified", "generated_simplified"
+    "reference-complete", "reference-simplified", "generated-simplified"
+]
+
+TaskType = Literal[
+    "readability-indexes",
+    "d-sari",
+    "nilc-metrix",
+    "embedding-similarity",
 ]
 
 
@@ -35,6 +45,13 @@ class DocumentResultModel(BaseModel):
     id: int
     name: str
     model: str
+
+
+class EmbeddingCosineSimilarity(DocumentResultModel):
+    id: int
+    name: str
+    model: str
+    original_simplified_similarity: float
 
 
 class DSARIMetrics(DocumentResultModel):
