@@ -3,9 +3,10 @@ import logging
 
 from gloe import partial_transformer
 from langchain.prompts import PromptTemplate
-from langchain_core.language_models import BaseChatModel
+from langchain_core.language_models import BaseChatModel, BaseLLM
+from langchain_core.messages.ai import AIMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_ollama.chat_models import ChatOllama
+from langchain_ollama.llms import OllamaLLM
 
 from schema import Document, ModelOptions
 from settings import config
@@ -24,7 +25,9 @@ def request_simplfied_text_from_chat_model(
     logger.info(f"Requesting API for simplified text of file {document.name}")
     response = llm_chain.invoke({"text": document.text})
 
-    return document.model_copy(update={"text": response.text()}), model
+    text = response.text() if isinstance(response, AIMessage) else response
+
+    return document.model_copy(update={"text": text}), model
 
 
 @lru_cache
@@ -33,7 +36,7 @@ def _read_prompt_file(prompt_file: str) -> PromptTemplate:
         return PromptTemplate.from_template("".join(f.readlines()))
 
 
-def _llm_for_model_name(model: ModelOptions) -> BaseChatModel:
+def _llm_for_model_name(model: ModelOptions) -> BaseLLM | BaseChatModel:
     match model:
         case "gemini-2.5-flash-preview-04-17":
             return ChatGoogleGenerativeAI(
@@ -42,11 +45,12 @@ def _llm_for_model_name(model: ModelOptions) -> BaseChatModel:
         case "cow/gemma2_tools:2b":
             headers = {
                 "Authorization": f"Bearer {config['llm_api_key']}",
+                "Accept": "application/json",
+                "Content-Type": "application/json",
             }
-            return ChatOllama(
+            return OllamaLLM(
                 model=model,
                 temperature=0,
-                disable_streaming=True,
                 base_url=config["llm_url"],
                 client_kwargs={"headers": headers, "timeout": 360},
             )
