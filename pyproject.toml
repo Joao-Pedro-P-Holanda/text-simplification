@@ -26,6 +26,8 @@ dependencies = [
     "md2pdf>=1.0.1",
     "beautifulsoup4>=4.13.4",
     "torch>=2.7.0",
+    "notebook>=7.4.2",
+    "jupyterlab>=4.4.2",
 ]
 
 [tool.uv.sources]
