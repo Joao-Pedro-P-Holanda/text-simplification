@@ -17,7 +17,6 @@ TaskType = Literal[
     "embedding-similarity",
 ]
 
-
 class Config(TypedDict):
     models: set[ModelOptions]
     llm_api_key: SecretStr
@@ -116,7 +115,7 @@ class DocumentStatistics(DocumentResultModel):
 
     @computed_field
     @property
-    def flesh_kincaid(self) -> float:
+    def flesch_kincaid(self) -> float:
         return (
             0.36 * (self.number_of_tokens / (self.number_of_sentences or 1))
             + 10.4 * (self.number_of_syllables / (self.number_of_tokens or 1))
