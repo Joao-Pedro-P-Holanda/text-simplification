@@ -23,7 +23,7 @@ def store_results_as_csv(
     )
     os.makedirs(store_path.parent, exist_ok=True)
 
-    with open(store_path, "w") as f:
+    with open(store_path, "w",newline='') as f:
         writer = csv.DictWriter(f, fieldnames=None)  # type:ignore
 
         for i, result in enumerate(results):
@@ -38,7 +38,7 @@ def store_results_as_csv(
 
 @transformer
 def read_markdown_file(path: str) -> Document:
-    with open(path, "r") as file:
+    with open(path, "r",encoding='utf-8') as file:
         text = "".join(file.readlines())
 
     return Document(path=path, text=text)
