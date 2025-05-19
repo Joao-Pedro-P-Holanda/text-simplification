@@ -23,8 +23,6 @@ from utils import zip_to_one, pick_first, pick_second
 
 DATA_DIR = Path(os.path.join(os.path.dirname(__file__), "data"))
 
-nlp = load_spacy_model("pt_core_news_lg")
-
 
 simplify_pdf_files_with_model: Transformer[
     tuple[list[str], ModelOptions], list[Any]
@@ -61,7 +59,9 @@ compute_embeddings_similarity_for_complete_and_generated_texts: Transformer[
 extract_metrics_from_generated_texts: Transformer[list[str], None] = Map(
     read_markdown_file
     >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
-    >> extract_document_statistics(nlp=nlp)
+    >> extract_document_statistics(
+        nlp_loader=load_spacy_model, model_name="pt_core_news_lg"
+    )
 ) >> store_results_as_csv(
     task_type="readability-indexes", doc_type="generated-simplified"
 )
@@ -69,7 +69,9 @@ extract_metrics_from_generated_texts: Transformer[list[str], None] = Map(
 extract_metrics_from_complete_texts: Transformer[list[str], None] = Map(
     read_markdown_file
     >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
-    >> extract_document_statistics(nlp=nlp)
+    >> extract_document_statistics(
+        nlp_loader=load_spacy_model, model_name="pt_core_news_lg"
+    )
 ) >> store_results_as_csv(
     task_type="readability-indexes", doc_type="reference-complete"
 )
@@ -77,7 +79,9 @@ extract_metrics_from_complete_texts: Transformer[list[str], None] = Map(
 extract_metrics_from_already_simplfied_texts: Transformer[list[str], None] = Map(
     read_markdown_file
     >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
-    >> extract_document_statistics(nlp=nlp)
+    >> extract_document_statistics(
+        nlp_loader=load_spacy_model, model_name="pt_core_news_lg"
+    )
 ) >> store_results_as_csv(
     task_type="readability-indexes", doc_type="reference-simplified"
 )

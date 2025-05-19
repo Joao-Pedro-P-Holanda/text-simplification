@@ -1,5 +1,6 @@
 import pickle
 from collections import Counter
+from typing import Callable
 
 import spacy
 from gloe import partial_transformer, transformer
@@ -15,9 +16,13 @@ from utils import is_valid_word
 @partial_transformer
 def extract_document_statistics(
     text_data: tuple[Document, set[str]],
-    nlp: spacy.language.Language,
+    nlp_loader: Callable[[str], spacy.language.Language],
+    model_name: str,
 ) -> DocumentStatistics:
     document, complex_words = text_data
+
+
+    nlp = nlp_loader(model_name)
 
     spacy_doc = nlp(document.text)
 
@@ -51,7 +56,7 @@ def extract_document_statistics(
         hapax_legomena_count=hapax_legomena,
         max_sentence_length=max_sentence_length,
         number_of_syllables=num_syllables,
-        model=nlp.meta["name"],
+        model=model_name,
     )
 
 
