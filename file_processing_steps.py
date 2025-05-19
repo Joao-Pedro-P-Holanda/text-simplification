@@ -38,7 +38,8 @@ def store_results_as_csv(
 
 @transformer
 def read_markdown_file(path: str) -> Document:
-    with open(path, "r",encoding='utf-8') as file:
+    logger.info(f"Reading file {path}")
+    with open(path, "r") as file:
         text = "".join(file.readlines())
 
     return Document(path=path, text=text)
@@ -52,7 +53,6 @@ def convert_pdf_file_to_markdown_text(path: str) -> Document:
     return Document(text=text, path=path)
 
 
-# TODO: don't make paths hardcoded
 @transformer
 def convert_pdf_file_to_markdown_file(path: str) -> pathlib.Path:
     text = pymupdf4llm.to_markdown(path)

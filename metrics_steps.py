@@ -1,6 +1,7 @@
 import pickle
 from collections import Counter
 from typing import Callable
+import logging
 
 import spacy
 from gloe import partial_transformer, transformer
@@ -13,6 +14,9 @@ from schema import (
 from utils import is_valid_word
 
 
+logger = logging.getLogger(__name__)
+
+
 @partial_transformer
 def extract_document_statistics(
     text_data: tuple[Document, set[str]],
@@ -21,6 +25,7 @@ def extract_document_statistics(
 ) -> DocumentStatistics:
     document, complex_words = text_data
 
+    logger.info(f"Extracting readability indexes from document {document.name}")
 
     nlp = nlp_loader(model_name)
 
@@ -77,6 +82,7 @@ def list_complex_words(
     """
     Finds all the words that have a frequency lower than the set threshold in the selected corpus
     """
+    logger.info(f"Finding complex words on {document.name}")
     result_words: set[str] = set()
     with open(frequencies_file, "rb") as file:
         frequencies = pickle.load(file)
