@@ -42,9 +42,17 @@ def _llm_for_model_name(model: ModelOptions) -> BaseLLM | BaseChatModel:
             return ChatGoogleGenerativeAI(
                 model=model, temperature=0, max_tokens=None, timeout=None, max_retries=1
             )
-        case "cow/gemma2_tools:2b":
+        case (
+            "cow/gemma2_tools:2b"
+            | "deepseek-r1:14b"
+            | "granite3-dense:2b"
+            | "granite3-dense:8b"
+            | "llama4:latest"
+            | "phi4:latest"
+            | "qwen2.5:14b"
+        ):
             headers = {
-                "Authorization": f"Bearer {config['llm_api_key']}",
+                "Authorization": f"Bearer {config['llm_api_key'].get_secret_value()}",
                 "Accept": "application/json",
                 "Content-Type": "application/json",
             }

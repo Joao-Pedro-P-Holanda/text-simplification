@@ -2,7 +2,16 @@ from typing import Literal, TypedDict
 from pydantic import BaseModel, SecretStr, computed_field
 from pathlib import Path
 
-ModelOptions = Literal["cow/gemma2_tools:2b", "gemini-2.5-flash-preview-04-17"]
+ModelOptions = Literal[
+    "cow/gemma2_tools:2b",
+    "phi4:latest",
+    "qwen2.5:14b",
+    "llama4:latest",
+    "deepseek-r1:14b",
+    "granite3-dense:2b",
+    "granite3-dense:8b",
+    "gemini-2.5-flash-preview-04-17",
+]
 
 EmbeddingModelOptions = Literal["nomic-ai/nomic-embed-text-v2-moe"]
 
@@ -16,6 +25,7 @@ TaskType = Literal[
     "nilc-metrix",
     "embedding-similarity",
 ]
+
 
 class Config(TypedDict):
     models: set[ModelOptions]
