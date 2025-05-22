@@ -159,6 +159,15 @@ class DocumentStatistics(DocumentResultModel):
 
     @computed_field
     @property
+    def gulpease(self) -> float:
+        return (
+            89
+            + 300 * (self.number_of_sentences / self.number_of_tokens)
+            - 10 * (self.number_of_characters / self.number_of_tokens)
+        )
+
+    @computed_field
+    @property
     def average_sentence_length(self) -> float:
         return self.number_of_tokens / (self.number_of_sentences or 1)
 
