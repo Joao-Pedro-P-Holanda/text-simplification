@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-from gloe import Transformer
+from gloe import Transformer, condition
 from gloe.utils import forward
 from gloe.collection import Map
 
@@ -24,6 +24,11 @@ from utils import zip_to_one, pick_first, pick_second
 DATA_DIR = Path(os.path.join(os.path.dirname(__file__), "data"))
 
 
+@condition
+def is_markdown(path: str) -> bool:
+    return path.endswith(".md")
+
+
 simplify_pdf_files_with_model: Transformer[
     tuple[list[str], ModelOptions], list[Any]
 ] = (
@@ -32,7 +37,9 @@ simplify_pdf_files_with_model: Transformer[
         Map(
             forward[tuple[str, ModelOptions]]()
             >> (
-                pick_first >> convert_pdf_file_to_markdown_text,
+                pick_first >> is_markdown.Then(read_markdown_file).Else(
+                    convert_pdf_file_to_markdown_text
+                ),
                 pick_second,
             )
         )
