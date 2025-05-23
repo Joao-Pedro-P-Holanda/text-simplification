@@ -38,7 +38,7 @@ def _read_prompt_file(prompt_file: str) -> PromptTemplate:
 
 def _llm_for_model_name(model: ModelOptions) -> BaseLLM | BaseChatModel:
     match model:
-        case "gemini-2.5-flash-preview-04-17":
+        case "gemini-2.5-flash-preview-04-17" | "gemini-2.5-pro-preview-05-06":
             return ChatGoogleGenerativeAI(
                 model=model, temperature=0, max_tokens=None, timeout=None, max_retries=1
             )
