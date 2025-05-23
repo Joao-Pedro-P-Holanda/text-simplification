@@ -3,9 +3,9 @@ import logging
 
 from gloe import partial_transformer
 from langchain.prompts import PromptTemplate
-from langchain_core.language_models import BaseChatModel, BaseLLM
+from langchain_core.language_models import BaseLLM
 from langchain_core.messages.ai import AIMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_google_genai import GoogleGenerativeAI
 from langchain_ollama.llms import OllamaLLM
 
 from schema import Document, ModelOptions
@@ -13,6 +13,7 @@ from settings import config
 
 logger = logging.getLogger(__name__)
 
+# TODO: if performance is not enough on cleaned data, perform splitting
 
 @partial_transformer
 def request_simplfied_text_from_chat_model(
@@ -36,11 +37,13 @@ def _read_prompt_file(prompt_file: str) -> PromptTemplate:
         return PromptTemplate.from_template("".join(f.readlines()))
 
 
-def _llm_for_model_name(model: ModelOptions) -> BaseLLM | BaseChatModel:
+def _llm_for_model_name(model: ModelOptions) -> BaseLLM:
+    temperature = 0
+    max_tokens = 25000
     match model:
         case "gemini-2.5-flash-preview-04-17" | "gemini-2.5-pro-preview-05-06":
-            return ChatGoogleGenerativeAI(
-                model=model, temperature=0, max_tokens=None, timeout=None, max_retries=1
+            return GoogleGenerativeAI(
+                model=model, temperature=temperature, max_tokens=max_tokens, timeout=None, max_retries=1
             )
         case (
             "cow/gemma2_tools:2b"
@@ -58,7 +61,8 @@ def _llm_for_model_name(model: ModelOptions) -> BaseLLM | BaseChatModel:
             }
             return OllamaLLM(
                 model=model,
-                temperature=0,
+                temperature=temperature,
+                num_predict=max_tokens,
                 base_url=config["llm_url"],
                 client_kwargs={"headers": headers, "timeout": 360},
             )
