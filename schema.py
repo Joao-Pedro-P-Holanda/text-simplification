@@ -11,7 +11,7 @@ ModelOptions = Literal[
     "granite3-dense:2b",
     "granite3-dense:8b",
     "gemini-2.5-flash-preview-04-17",
-    "gemini-2.5-pro"
+    "gemini-2.5-pro-preview-05-06"
 ]
 
 EmbeddingModelOptions = Literal["nomic-ai/nomic-embed-text-v2-moe"]
