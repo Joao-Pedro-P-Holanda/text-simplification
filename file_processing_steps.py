@@ -8,6 +8,7 @@ import pymupdf4llm
 from gloe import partial_transformer, transformer
 
 from schema import Document, DocumentResultModel, DocumentType, TaskType
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ def read_markdown_file(path: str) -> Document:
 @transformer
 def convert_pdf_file_to_markdown_text(path: str) -> Document:
     logger.info(f"Converting pdf file at {path} to markdown text")
-    text = pymupdf4llm.to_markdown(path)
+    text = pymupdf4llm.to_markdown(pathlib.Path(path))
 
     return Document(text=text, path=path)
 
@@ -72,10 +73,10 @@ def save_document_text_on_markdown_file(
 ) -> None:
     document, model = input
 
-    model_path = model.replace("/", "-")
+    model_path = re.sub("/|:","-",model)
 
     os.makedirs(f"./result/text-simplification/{doc_type}/{model_path}", exist_ok=True)
     with open(
-        f"./result/text-simplification/{doc_type}/{model_path}/{document.name}.md", "w"
+        f"./result/text-simplification/{doc_type}/{model_path}/{document.name}.md", "w",encoding="utf-8"
     ) as file:
         file.write(document.text)
