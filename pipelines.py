@@ -15,7 +15,7 @@ from file_processing_steps import (
 )
 from metrics_steps import extract_document_statistics, list_complex_words
 from request_steps import (
-    request_simplfied_text_from_chat_model,
+    request_simplfied_text_from_chat_model, generate_documents_for_texts,
 )
 from schema import ModelOptions
 from settings import load_spacy_model
@@ -44,9 +44,9 @@ simplify_pdf_files_with_model: Transformer[
             )
         )
     )
-    >> Map(
+    >> generate_documents_for_texts >> Map(
         request_simplfied_text_from_chat_model(
-            prompt_file="prompt_simplify_document.txt"
+            prompt_file="prompt_simplify_document.txt",
         )
         >> save_document_text_on_markdown_file(doc_type="generated-simplified")
     )

@@ -1,4 +1,6 @@
 from typing import Literal, TypedDict
+
+from langchain_core.documents import Document as LangchainDocument
 from pydantic import BaseModel, SecretStr, computed_field
 from pathlib import Path
 
@@ -37,6 +39,7 @@ class Config(TypedDict):
 class Document(BaseModel):
     path: str
     text: str
+    langchain_documents:list[LangchainDocument] = []
 
     @computed_field
     @property

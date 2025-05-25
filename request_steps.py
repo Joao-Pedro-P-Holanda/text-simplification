@@ -1,12 +1,13 @@
 from functools import lru_cache
 import logging
 
-from gloe import partial_transformer
+from gloe import partial_transformer, transformer
 from langchain.prompts import PromptTemplate
 from langchain_core.language_models import BaseLLM
 from langchain_core.messages.ai import AIMessage
 from langchain_google_genai import GoogleGenerativeAI
 from langchain_ollama.llms import OllamaLLM
+from langchain_text_splitters import MarkdownTextSplitter
 
 from schema import Document, ModelOptions
 from settings import config
@@ -23,12 +24,29 @@ def request_simplfied_text_from_chat_model(
 
     llm_chain = _read_prompt_file(prompt_file) | _llm_for_model_name(model)
 
-    logger.info(f"Requesting API for simplified text of file {document.name}")
-    response = llm_chain.invoke({"text": document.text})
 
-    text = response.text() if isinstance(response, AIMessage) else response
+
+    text= ""
+    for idx,chunk in enumerate(document.langchain_documents):
+        logger.info(f"Requesting API for simplified chunk {idx} of file {document.name}")
+        response = llm_chain.invoke({"text": chunk})
+
+        text += response.text() + "\n" if isinstance(response, AIMessage) else response + "\n"
 
     return document.model_copy(update={"text": text}), model
+
+@transformer
+def generate_documents_for_texts(input: list[tuple[Document, ModelOptions]]) -> list[tuple[Document,ModelOptions]]:
+    splitter = MarkdownTextSplitter(
+        chunk_size=4000,
+        chunk_overlap=0,
+        length_function=len,
+        keep_separator=True
+    )
+
+    for doc, _ in input:
+       doc.langchain_documents = splitter.split_text(doc.text)
+    return input
 
 
 @lru_cache
