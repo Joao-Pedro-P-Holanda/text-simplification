@@ -1,16 +1,20 @@
 from typing import Literal, TypedDict
 
 from langchain_core.documents import Document as LangchainDocument
-from pydantic import BaseModel, SecretStr, computed_field
+from pydantic import BaseModel, SecretStr, computed_field, HttpUrl
 from pathlib import Path
 import re
 
 ModelOptions = Literal[
     "cow/gemma2_tools:2b",
     "phi4:latest",
+    "phi3:latest",
+    "llama3.2:latest",
+    "gemma3:4b",
     "qwen2.5:14b",
-    "llama4:latest",
+    "qwen2.5-coder:32b",
     "deepseek-r1:14b",
+    "granite-code:8b",
     "granite3-dense:2b",
     "granite3-dense:8b",
     "gemini-2.5-flash-preview-04-17",
@@ -35,6 +39,7 @@ class Config(TypedDict):
     models: set[ModelOptions]
     llm_api_key: SecretStr
     llm_url: str
+    nilc_metrix_url: HttpUrl
 
 
 class Document(BaseModel):

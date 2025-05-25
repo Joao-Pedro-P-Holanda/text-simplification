@@ -65,12 +65,16 @@ def _llm_for_model_name(model: ModelOptions) -> BaseLLM:
             )
         case (
             "cow/gemma2_tools:2b"
+            | "phi4:latest"
+            | "phi3:latest"
+            | "llama3.2:latest"
+            | "gemma3:4b"
+            | "qwen2.5:14b"
+            | "qwen2.5-coder:32b"
             | "deepseek-r1:14b"
+            | "granite-code:8b"
             | "granite3-dense:2b"
             | "granite3-dense:8b"
-            | "llama4:latest"
-            | "phi4:latest"
-            | "qwen2.5:14b"
         ):
             headers = {
                 "Authorization": f"Bearer {config['llm_api_key'].get_secret_value()}",
