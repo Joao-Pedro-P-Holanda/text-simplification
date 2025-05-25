@@ -53,6 +53,7 @@ def extract_document_statistics(
     return DocumentStatistics(
         id=document.id,
         name=document.name,
+        year=document.year,
         number_of_sentences=num_sentences,
         number_of_tokens=len(tokens),
         number_of_types=len(types),
@@ -62,6 +63,7 @@ def extract_document_statistics(
         max_sentence_length=max_sentence_length,
         number_of_syllables=num_syllables,
         model=model_name,
+        generated_with=document.generated_with,
     )
 
 

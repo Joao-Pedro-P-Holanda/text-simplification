@@ -3,6 +3,7 @@ from typing import Literal, TypedDict
 from langchain_core.documents import Document as LangchainDocument
 from pydantic import BaseModel, SecretStr, computed_field
 from pathlib import Path
+import re
 
 ModelOptions = Literal[
     "cow/gemma2_tools:2b",
@@ -43,6 +44,18 @@ class Document(BaseModel):
 
     @computed_field
     @property
+    def generated_with(self)->ModelOptions|None:
+        parts = Path(self.path).parts
+        pattern = re.compile(r"/|:|-")
+        names = {re.sub(pattern,"",arg):arg for arg in ModelOptions.__args__}
+        for part in parts:
+            key =re.sub(pattern,"",str(part))
+            if key in names:
+                return names[key]
+        return None
+
+    @computed_field
+    @property
     def name(self) -> str:
         return Path(self.path).stem
 
@@ -51,13 +64,23 @@ class Document(BaseModel):
     def id(self) -> int:
         splits = self.name.split("_")
 
+        return int(splits[-1])
+
+    @computed_field
+    @property
+    def year(self)->int:
+        splits = self.name.split("_")
+
         return int(splits[0])
+
 
 
 class DocumentResultModel(BaseModel):
     id: int
     name: str
+    year: int
     model: str
+    generated_with: ModelOptions | None
 
 
 class EmbeddingCosineSimilarity(DocumentResultModel):

@@ -23,7 +23,9 @@ def compare_embedded_sentences_similarity(
     return EmbeddingCosineSimilarity(
         id=sentences[0].id,
         name=sentences[0].name,
+        year=sentences[0].year,
         model=model_name,
+        generated_with=sentences[0].generated_with,
         original_simplified_similarity=model.similarity(
             embeddings[0], embeddings[1]
         ).item(),
