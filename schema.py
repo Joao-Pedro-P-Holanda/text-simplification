@@ -200,5 +200,5 @@ class DocumentStatistics(DocumentResultModel):
 
     @computed_field
     @property
-    def average_sylables_word(self) -> float:
+    def average_syllables_word(self) -> float:
         return self.number_of_syllables / self.number_of_tokens
