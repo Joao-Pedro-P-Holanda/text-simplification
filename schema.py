@@ -18,7 +18,7 @@ ModelOptions = Literal[
     "granite3-dense:2b",
     "granite3-dense:8b",
     "gemini-2.5-flash-preview-04-17",
-    "gemini-2.5-pro-preview-05-06"
+    "gemini-2.5-pro-preview-05-06",
 ]
 
 EmbeddingModelOptions = Literal["nomic-ai/nomic-embed-text-v2-moe"]
@@ -45,16 +45,16 @@ class Config(TypedDict):
 class Document(BaseModel):
     path: str
     text: str
-    langchain_documents:list[LangchainDocument] = []
+    langchain_documents: list[LangchainDocument] = []
 
     @computed_field
     @property
-    def generated_with(self)->ModelOptions|None:
+    def generated_with(self) -> ModelOptions | None:
         parts = Path(self.path).parts
         pattern = re.compile(r"/|:|-")
-        names = {re.sub(pattern,"",arg):arg for arg in ModelOptions.__args__}
+        names = {re.sub(pattern, "", arg): arg for arg in ModelOptions.__args__}
         for part in parts:
-            key =re.sub(pattern,"",str(part))
+            key = re.sub(pattern, "", str(part))
             if key in names:
                 return names[key]
         return None
@@ -73,18 +73,17 @@ class Document(BaseModel):
 
     @computed_field
     @property
-    def year(self)->int:
+    def year(self) -> int:
         splits = self.name.split("_")
 
         return int(splits[0])
-
 
 
 class DocumentResultModel(BaseModel):
     id: int
     name: str
     year: int
-    model: str
+    model: str | None = None
     generated_with: ModelOptions | None
 
 
@@ -106,28 +105,6 @@ class DSARIMetrics(DocumentResultModel):
 
     sari: float
     d_sari: float
-
-
-class NILCMetrics(DocumentResultModel):
-    sentences_per_paragraph: float
-    passive_ratio: float
-    postponed_subject_ratio: float
-    non_svo_ratio: float
-    sentences_with_one_clause: float
-    sentences_with_seven_more_clauses: float
-    words_before_main_verb: float
-    content_word_max: float
-    content_word_min: float
-    function_words: float
-    ratio_function_to_content_words: float
-    adjectives_ambiguity: float
-    adverbs_ambiguity: float
-    nouns_ambiguity: float
-    verbs_ambiguity: float
-    content_words_ambiguity: float
-    simple_word_ratio: float
-    coreference_pronoun_ratio: float
-    demonstrative_pronoun_ratio: float
 
 
 class DocumentStatistics(DocumentResultModel):
@@ -207,3 +184,91 @@ class DocumentStatistics(DocumentResultModel):
     @property
     def average_syllables_word(self) -> float:
         return self.number_of_syllables / self.number_of_tokens
+
+
+class NILCMetrics(DocumentResultModel):
+    sentences_per_paragraph: float  # ok
+    # passive_ratio: float
+    # postponed_subject_ratio: float
+    # non_svo_ratio: float
+    # sentences_with_one_clause: float
+    # sentences_with_seven_more_clauses: float
+    # words_before_main_verb: float
+    # content_word_max: float
+    # content_word_min: float
+    function_words: float  # ok
+    ratio_function_to_content_words: float  # ok
+    adjectives_ambiguity: float  # ok
+    adverbs_ambiguity: float  # ok
+    nouns_ambiguity: float  # ok
+    verbs_ambiguity: float  # ok
+    # content_words_ambiguity: float
+    # simple_word_ratio: float
+    # coreference_pronoun_ratio: float
+    # demonstrative_pronoun_ratio: float
+
+    adjective_ratio: float
+    adverbs: float
+    content_words: float
+    flesch: float
+    syllables_per_content_word: float
+    words_per_sentence: float
+    noun_ratio: float
+    paragraphs: int
+    sentences: int
+    words: int
+    pronoun_ratio: float
+    verbs: float
+    logic_operators: float
+    and_ratio: float
+    if_ratio: float
+    or_ratio: float
+    negation_ratio: float
+    cw_freq: float
+    cw_freq_brwac: float
+    cw_freq_bra: float
+    min_cw_freq: float
+    min_cw_freq_brwac: float
+    min_freq_brwac: float
+    min_cw_freq_bra: float
+    min_freq_bra: float
+    freq_brwac: float
+    freq_bra: float
+    hypernyms_verbs: float
+    brunet: float
+    honore: float
+    personal_pronouns: float
+    ttr: float
+    conn_ratio: float
+    add_neg_conn_ratio: float
+    add_pos_conn_ratio: float
+    cau_neg_conn_ratio: float
+    cau_pos_conn_ratio: float
+    log_neg_conn_ratio: float
+    log_pos_conn_ratio: float
+    tmp_neg_conn_ratio: float
+    tmp_pos_conn_ratio: float
+    yngve: float
+    frazier: float
+    dep_distance: float
+    cross_entropy: float
+    content_density: float
+    adjacent_refs: float
+    anaphoric_refs: float
+    adj_arg_ovl: float
+    arg_ovl: float
+    adj_stem_ovl: float
+    stem_ovl: float
+    adj_cw_ovl: float
+    lsa_adj_mean: float
+    lsa_adj_std: float
+    lsa_all_mean: float
+    lsa_all_std: float
+    lsa_paragraph_mean: float
+    lsa_paragraph_std: float
+    lsa_givenness_mean: float
+    lsa_givenness_std: float
+    lsa_span_mean: float
+    lsa_span_std: float
+    negative_words: float
+    positive_words: float

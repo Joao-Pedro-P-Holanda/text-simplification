@@ -4,7 +4,7 @@ import logging.config
 import os
 import spacy
 from dotenv import load_dotenv
-from pydantic import SecretStr
+from pydantic import HttpUrl, SecretStr
 from schema import Config
 import spacy_syllables
 
@@ -60,4 +60,5 @@ config: Config = {
     "models": {"cow/gemma2_tools:2b"},
     "llm_api_key": SecretStr(os.environ["LLM_JWT"]),
     "llm_url": "http://ollama.atlab.ufc.br:8080/ollama/",
+    "nilc_metrix_url": HttpUrl(os.getenv("NILC_METRIX_URL", "")),
 }

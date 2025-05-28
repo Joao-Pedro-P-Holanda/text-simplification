@@ -2,6 +2,8 @@ import pickle
 from collections import Counter
 from typing import Callable
 import logging
+import httpx
+from urllib.parse import urljoin
 
 import spacy
 from gloe import partial_transformer, transformer
@@ -10,7 +12,9 @@ from spacy.matcher import Matcher
 from schema import (
     Document,
     DocumentStatistics,
+    NILCMetrics,
 )
+from settings import config
 from utils import is_valid_word
 
 
@@ -68,13 +72,22 @@ def extract_document_statistics(
 
 
 @transformer
-def calculate_nilc_metrix(text: str, nlp: spacy.language.Language):
-    doc = nlp(text)
-    matcher = Matcher(nlp.vocab)
+def extract_nilc_metrix(document: Document):
+    metrics_url = urljoin(
+        str(config["nilc_metrix_url"]), "/api/v1/metrix/_min/yyy?format=json"
+    )
+    headers = {"Content-Type": "text"}
 
-    non_svo_pattern = []
+    logger.info(f"Requesting nilc-metrix for document {document.name} at {metrics_url}")
+    response = httpx.post(
+        metrics_url, headers=headers, content=document.text, timeout=None
+    )
 
-    passive_pattern = []
+    response_dict = response.json()
+
+    response_dict.update(document.model_dump())
+
+    return NILCMetrics.model_validate(response_dict)
 
 
 @partial_transformer

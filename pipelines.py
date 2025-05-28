@@ -13,9 +13,14 @@ from file_processing_steps import (
     read_markdown_file,
     store_results_as_csv,
 )
-from metrics_steps import extract_document_statistics, list_complex_words
+from metrics_steps import (
+    extract_document_statistics,
+    list_complex_words,
+    extract_nilc_metrix,
+)
 from request_steps import (
-    request_simplfied_text_from_chat_model, generate_documents_for_texts,
+    request_simplfied_text_from_chat_model,
+    generate_documents_for_texts,
 )
 from schema import ModelOptions
 from settings import load_spacy_model
@@ -37,14 +42,16 @@ simplify_pdf_files_with_model: Transformer[
         Map(
             forward[tuple[str, ModelOptions]]()
             >> (
-                pick_first >> is_markdown.Then(read_markdown_file).Else(
+                pick_first
+                >> is_markdown.Then(read_markdown_file).Else(
                     convert_pdf_file_to_markdown_text
                 ),
                 pick_second,
             )
         )
     )
-    >> generate_documents_for_texts >> Map(
+    >> generate_documents_for_texts
+    >> Map(
         request_simplfied_text_from_chat_model(
             prompt_file="prompt_simplify_document.txt",
         )
@@ -62,6 +69,19 @@ compute_embeddings_similarity_for_complete_and_generated_texts: Transformer[
 ) >> store_results_as_csv(
     task_type="embedding-similarity",
 )
+
+extract_nilc_metrix_from_original_complete_texts: Transformer[list[str], None] = Map(
+    read_markdown_file >> extract_nilc_metrix
+) >> store_results_as_csv(task_type="nilc-metrix", doc_type="reference-complete")
+
+extract_nilc_metrix_from_generated_texts: Transformer[list[str], None] = Map(
+    read_markdown_file >> extract_nilc_metrix
+) >> store_results_as_csv(task_type="nilc-metrix", doc_type="generated-simplified")
+
+extract_nilc_metrix_from_original_simplified_texts: Transformer[list[str], None] = Map(
+    read_markdown_file >> extract_nilc_metrix
+) >> store_results_as_csv(task_type="nilc-metrix", doc_type="reference-simplified")
+
 
 extract_metrics_from_generated_texts: Transformer[list[str], None] = Map(
     read_markdown_file
