@@ -18,18 +18,21 @@ def store_results_as_csv(
     results: Iterable[DocumentResultModel],
     task_type: TaskType,
     doc_type: DocumentType | None = None,
+    mode: Literal["a", "w"] = "w",
 ):
     store_path = pathlib.Path(
         f"./result/{task_type}{'/' + doc_type if doc_type else '/result'}.csv"
     )
     os.makedirs(store_path.parent, exist_ok=True)
 
-    with open(store_path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=None)  # type:ignore
+    with open(store_path, "r") as f:
+        number_of_lines = len(f.readlines())
 
-        for i, result in enumerate(results):
+    with open(store_path, mode, newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=None)  # type:ignore
+        for result in results:
             data = result.model_dump()
-            if i == 0:
+            if number_of_lines == 0:
                 writer.fieldnames = data.keys()
 
                 writer.writeheader()
