@@ -1,3 +1,5 @@
+from itertools import groupby
+from operator import attrgetter
 import pickle
 from collections import Counter
 from typing import Callable
@@ -88,6 +90,14 @@ def extract_nilc_metrix(document: Document):
     response_dict.update(document.model_dump())
 
     return NILCMetrics.model_validate(response_dict)
+
+
+@transformer
+def group_documents_by_model(documents: list[Document]) -> list[list[Document]]:
+    by_name = groupby(documents, key=attrgetter("generated_with"))
+    result = [list(group[1]) for group in by_name]
+
+    return result
 
 
 @partial_transformer

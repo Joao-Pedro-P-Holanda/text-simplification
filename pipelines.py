@@ -15,6 +15,7 @@ from file_processing_steps import (
 )
 from metrics_steps import (
     extract_document_statistics,
+    group_documents_by_model,
     list_complex_words,
     extract_nilc_metrix,
 )
@@ -74,9 +75,18 @@ extract_nilc_metrix_from_original_complete_texts: Transformer[list[str], None] =
     read_markdown_file >> extract_nilc_metrix
 ) >> store_results_as_csv(task_type="nilc-metrix", doc_type="reference-complete")
 
-extract_nilc_metrix_from_generated_texts: Transformer[list[str], None] = Map(
-    read_markdown_file >> extract_nilc_metrix
-) >> store_results_as_csv(task_type="nilc-metrix", doc_type="generated-simplified")
+# perform extraction batches per name
+extract_nilc_metrix_from_generated_texts: Transformer[list[str], list[None]] = (
+    Map(read_markdown_file)
+    >> group_documents_by_model
+    >> Map(
+        Map(extract_nilc_metrix)
+        >> store_results_as_csv(
+            task_type="nilc-metrix", doc_type="generated-simplified", mode="a"
+        )
+    )
+)
+
 
 extract_nilc_metrix_from_original_simplified_texts: Transformer[list[str], None] = Map(
     read_markdown_file >> extract_nilc_metrix
