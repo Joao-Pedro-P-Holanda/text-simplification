@@ -3,6 +3,7 @@ import logging
 import os
 import pathlib
 from collections.abc import Iterable
+from typing import Literal
 
 import pymupdf4llm
 from gloe import partial_transformer, transformer
@@ -24,9 +25,10 @@ def store_results_as_csv(
         f"./result/{task_type}{'/' + doc_type if doc_type else '/result'}.csv"
     )
     os.makedirs(store_path.parent, exist_ok=True)
-
-    with open(store_path, "r") as f:
-        number_of_lines = len(f.readlines())
+    number_of_lines = 0
+    if os.path.exists(store_path):
+        with open(store_path, "r") as f:
+            number_of_lines = len(f.readlines())
 
     with open(store_path, mode, newline="") as f:
         writer = csv.DictWriter(f, fieldnames=None)  # type:ignore
@@ -76,10 +78,12 @@ def save_document_text_on_markdown_file(
 ) -> None:
     document, model = input
 
-    model_path = re.sub("/|:","-",model)
+    model_path = re.sub("/|:", "-", model)
 
     os.makedirs(f"./result/text-simplification/{doc_type}/{model_path}", exist_ok=True)
     with open(
-        f"./result/text-simplification/{doc_type}/{model_path}/{document.name}.md", "w",encoding="utf-8"
+        f"./result/text-simplification/{doc_type}/{model_path}/{document.name}.md",
+        "w",
+        encoding="utf-8",
     ) as file:
         file.write(document.text)
