@@ -69,7 +69,11 @@ class Document(BaseModel):
     def id(self) -> int:
         splits = self.name.split("_")
 
-        return int(splits[-1])
+        for i in splits[::-1]:
+            try:
+                return int(i)
+            except:
+                pass
 
     @computed_field
     @property
