@@ -2,6 +2,7 @@ from itertools import groupby
 from operator import attrgetter
 import pickle
 from collections import Counter
+import re
 from typing import Callable
 import logging
 import httpx
@@ -23,6 +24,13 @@ from utils import is_valid_word
 
 
 logger = logging.getLogger(__name__)
+
+
+@transformer
+def transform_document_to_metric_operations(document: Document):
+    return document.model_copy(
+        update={"text": re.sub(re.compile(r"\*|-{2,}"), "", document.text)}
+    )
 
 
 @partial_transformer
