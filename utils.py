@@ -31,4 +31,4 @@ def zip_to_one(input: tuple[list[T], V]) -> list[tuple[T, V]]:
 
 
 def is_valid_word(s: str) -> bool:
-    return all(part.isalpha() for part in s.split("-"))
+    return all(part.isalnum() and not part.isnumeric() for part in s.split("-"))
