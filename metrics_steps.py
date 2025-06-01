@@ -49,7 +49,7 @@ def extract_document_statistics(
 
     sentences = list(spacy_doc.sents)
 
-    num_characters = len([char for char in document.text if char.isalpha()])
+    num_characters = sum([len(token) for token in spacy_doc if not token.is_space])
 
     num_sentences = len(sentences)
 
