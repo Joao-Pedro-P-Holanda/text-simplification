@@ -34,10 +34,12 @@ def store_results_as_csv(
         writer = csv.DictWriter(f, fieldnames=None)  # type:ignore
         for result in results:
             data = result.model_dump()
-            if number_of_lines == 0:
-                writer.fieldnames = data.keys()
+            writer.fieldnames = data.keys()
 
+            if number_of_lines == 0:
                 writer.writeheader()
+                # avoid writing headers for the whole first batch
+                number_of_lines += 1
 
             writer.writerow(data)
 
