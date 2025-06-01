@@ -140,16 +140,19 @@ def _non_svo(doc: Doc) -> float:
     subject_deps = ["nsubj", "nsubjpass", "csubj", "csubjpass", "agent", "expl"]
     object_deps = ["dobj", "dative", "attr", "oprd"]
 
-    verbs = [token for token in doc if token.pos_ == "VERB" and token.dep_ != "aux"]
+    for sent in doc.sents:
+        verbs = [
+            token for token in sent if token.pos_ == "VERB" and token.dep_ == "ROOT"
+        ]
 
-    for verb in verbs:
-        # finds the position of the entities
-        # if a subject comes after or the object comes before the sentences is not svo
-        for child in verb.children:
-            if child.dep_ in subject_deps and child.dep > verb.i:
-                non_svo.append(verb.sent)
-            elif child.dep_ in object_deps and child.i < verb.i:
-                non_svo.append(verb.sent)
+        for verb in verbs:
+            # finds the position of the entities
+            # if a subject comes after or the object comes before the sentences is not svo
+            for child in verb.children:
+                if child.dep_ in subject_deps and child.dep > verb.i:
+                    non_svo.append(verb.sent)
+                elif child.dep_ in object_deps and child.i < verb.i:
+                    non_svo.append(verb.sent)
 
     return len(non_svo) / len(list(doc.sents))
 
