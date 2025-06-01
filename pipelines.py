@@ -17,7 +17,8 @@ from metrics_steps import (
     extract_document_statistics,
     group_documents_by_model,
     list_complex_words,
-    extract_nilc_metrix,
+    extract_min_nilc_metrix,
+    transform_document_to_metric_operations,
 )
 from request_steps import (
     request_simplfied_text_from_chat_model,
@@ -25,7 +26,7 @@ from request_steps import (
 )
 from schema import ModelOptions
 from settings import load_spacy_model
-from utils import zip_to_one, pick_first, pick_second
+from utils import convert_to_list, zip_to_one, pick_first, pick_second
 
 DATA_DIR = Path(os.path.join(os.path.dirname(__file__), "data"))
 
@@ -72,29 +73,37 @@ compute_embeddings_similarity_for_complete_and_generated_texts: Transformer[
 )
 
 extract_nilc_metrix_from_original_complete_texts: Transformer[list[str], None] = Map(
-    read_markdown_file >> extract_nilc_metrix
+    read_markdown_file
+    >> transform_document_to_metric_operations
+    >> extract_min_nilc_metrix
 ) >> store_results_as_csv(task_type="nilc-metrix", doc_type="reference-complete")
 
 # perform extraction batches per name
 extract_nilc_metrix_from_generated_texts: Transformer[list[str], list[None]] = (
-    Map(read_markdown_file)
+    Map(read_markdown_file >> transform_document_to_metric_operations)
     >> group_documents_by_model
     >> Map(
-        Map(extract_nilc_metrix)
-        >> store_results_as_csv(
-            task_type="nilc-metrix", doc_type="generated-simplified", mode="a"
+        Map(
+            extract_min_nilc_metrix
+            >> convert_to_list
+            >> store_results_as_csv(
+                task_type="nilc-metrix", doc_type="generated-simplified", mode="a"
+            )
         )
     )
 )
 
 
 extract_nilc_metrix_from_original_simplified_texts: Transformer[list[str], None] = Map(
-    read_markdown_file >> extract_nilc_metrix
+    read_markdown_file
+    >> transform_document_to_metric_operations
+    >> extract_min_nilc_metrix
 ) >> store_results_as_csv(task_type="nilc-metrix", doc_type="reference-simplified")
 
 
 extract_metrics_from_generated_texts: Transformer[list[str], None] = Map(
     read_markdown_file
+    >> transform_document_to_metric_operations
     >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
     >> extract_document_statistics(
         nlp_loader=load_spacy_model, model_name="pt_core_news_lg"
@@ -105,6 +114,7 @@ extract_metrics_from_generated_texts: Transformer[list[str], None] = Map(
 
 extract_metrics_from_complete_texts: Transformer[list[str], None] = Map(
     read_markdown_file
+    >> transform_document_to_metric_operations
     >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
     >> extract_document_statistics(
         nlp_loader=load_spacy_model, model_name="pt_core_news_lg"
@@ -115,6 +125,7 @@ extract_metrics_from_complete_texts: Transformer[list[str], None] = Map(
 
 extract_metrics_from_already_simplfied_texts: Transformer[list[str], None] = Map(
     read_markdown_file
+    >> transform_document_to_metric_operations
     >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
     >> extract_document_statistics(
         nlp_loader=load_spacy_model, model_name="pt_core_news_lg"
