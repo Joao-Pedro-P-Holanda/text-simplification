@@ -11,6 +11,7 @@ from gloe import partial_transformer, transformer
 from schema import Document, DocumentResultModel, DocumentType, TaskType
 import re
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,15 +33,14 @@ def store_results_as_csv(
 
     with open(store_path, mode, newline="") as f:
         writer = csv.DictWriter(f, fieldnames=None)  # type:ignore
+
+        writer.fieldnames = results[0].model_dump().keys()
+        if mode == "w" or (mode == "a" and number_of_lines == 0):
+            writer.writeheader()
+            number_of_lines += 1
+
         for result in results:
             data = result.model_dump()
-            writer.fieldnames = data.keys()
-
-            if number_of_lines == 0:
-                writer.writeheader()
-                # avoid writing headers for the whole first batch
-                number_of_lines += 1
-
             writer.writerow(data)
 
 
@@ -89,3 +89,12 @@ def save_document_text_on_markdown_file(
         encoding="utf-8",
     ) as file:
         file.write(document.text)
+
+
+@transformer
+def save_file_without_formatting(document: Document) -> None:
+    original_path = pathlib.Path(document.path)
+    new_path = original_path.with_stem(original_path.stem + "_stripped")
+    logger.info(f"Stripping markdown formating for file {document.path}")
+    with open(new_path, "w") as stripped_file:
+        stripped_file.write(document.text)
