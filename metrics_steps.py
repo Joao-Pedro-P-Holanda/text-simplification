@@ -1,9 +1,10 @@
-from itertools import groupby
+from itertools import chain, groupby, pairwise
 from operator import attrgetter
 import pickle
 from collections import Counter
 import re
-from typing import Callable
+from statistics import mean
+from typing import Callable, overload
 import logging
 import httpx
 from urllib.parse import urljoin
@@ -14,23 +15,68 @@ from spacy.matcher import Matcher
 from spacy.tokens.doc import Doc
 from spacy.tokens.span import Span
 
+from conllu_adapted import Conllu
 from schema import (
     Document,
     DocumentStatistics,
     NILCMetrics,
 )
 from settings import config
-from utils import is_valid_word
+from utils import (
+    is_valid_word,
+    remove_markdown_tables,
+    strip_special_characters,
+    remove_extra_whitespaces,
+    remove_enumerations,
+    split_sentences,
+)
 
 
 logger = logging.getLogger(__name__)
 
 
 @transformer
-def transform_document_to_metric_operations(document: Document):
-    return document.model_copy(
-        update={"text": re.sub(re.compile(r"\*|-{2,}"), "", document.text)}
-    )
+def transform_document_to_metric_operations(document: Document) -> Document:
+    new_text = (
+        remove_markdown_tables
+        >> strip_special_characters
+        >> remove_extra_whitespaces
+        >> remove_enumerations
+        >> split_sentences
+        >> remove_extra_whitespaces
+    )(document.text)
+
+    return document.model_copy(update={"text": new_text})
+
+
+@transformer
+def extract_document_statistics_port_parser(
+    text_data: tuple[Document, set[str]],
+) -> DocumentStatistics:
+    document, complex_words = text_data
+
+    logger.info(f"Extracting readability indexes from document {document.name}")
+    try:
+        conllu = Conllu.from_file(document.path)
+
+        return DocumentStatistics(
+            id=document.id,
+            name=document.name,
+            year=document.year,
+            generated_with=document.generated_with,
+            model="port_parser",
+            max_sentence_length=conllu.max_sentence_length,
+            number_of_sentences=len(conllu.sentences),
+            number_of_complex_words=len(complex_words),
+            hapax_legomena_count=len(conllu.hapax_legomena),
+            number_of_types=len(conllu.types),
+            number_of_tokens=conllu.token_count,
+            number_of_syllables=conllu.syllables_count_pyphen,
+            number_of_characters=conllu.character_count,
+        )
+
+    except:
+        raise
 
 
 @partial_transformer
@@ -55,7 +101,7 @@ def extract_document_statistics(
 
     max_sentence_length = max([len(sentence) for sentence in sentences])
 
-    tokens = [token.text.lower() for token in spacy_doc if token.is_alpha]
+    tokens = [token.text for token in spacy_doc if token.is_alpha]
     # lemmas = [token.lemma_ for token in doc if token.is_alpha]
     num_syllables = sum(
         [token._.syllables_count for token in spacy_doc if token.is_alpha]
@@ -121,9 +167,9 @@ def extract_syntatic_nilc_metrix(
 
     sentences = list(spacy_doc.sents)
 
-    _passive_ratio(spacy_doc, len(sentences), matcher)
+    print(_passive_ratio(spacy_doc, len(sentences), matcher))
 
-    _non_svo(spacy_doc)
+    print(_non_svo(spacy_doc))
 
     print(_long_sentence_ratio(sentences))
 
@@ -157,6 +203,9 @@ def _non_svo(doc: Doc) -> float:
     return len(non_svo) / len(list(doc.sents))
 
 
+def _passive_ratio_ud(conllu: Conllu): ...
+
+
 def _passive_ratio(doc, num_of_sents: int, matcher: Matcher):
     passive_rule = [{"DEP": "nsubjpass"}]
     matcher.add("Passive voice", [passive_rule])
@@ -166,7 +215,13 @@ def _passive_ratio(doc, num_of_sents: int, matcher: Matcher):
     return result
 
 
+def _words_before_main_verb_ud(conllu: Conllu): ...
+
+
 def _words_before_main_verb(sents: list[Span]) -> float: ...
+
+
+def _long_sentence_ratio_ud(conllu: Conllu) -> float: ...
 
 
 def _long_sentence_ratio(sents: list[Span]) -> float:
@@ -182,16 +237,77 @@ def _long_sentence_ratio(sents: list[Span]) -> float:
     return i / len(sents)
 
 
+def _personal_pronoun_ratio_ud(conllu: Conllu) -> float:
+    tokens = list(
+        chain.from_iterable([sentence.tokens for sentence in conllu.sentences])
+    )
+
+    personal = list(
+        filter(
+            lambda tok: tok.upos == "PRON" and tok.feats.get("PronType") == "Prs",
+            tokens,
+        )
+    )
+
+    return len(personal) / (len(tokens) or 1)
+
+
 def _aux_plus_PCP_per_sentence(sents: list[Span]) -> float: ...
+
+
+def _coreference_pronoun_ratio_ud(conllu: Conllu) -> float:
+    """
+    Number of possible referents in the direct previous sentence based on the subject pronouns
+    (ele, ela, elas, eles) of the current sentence.
+    """
+
+    subject_pronouns_exp = [
+        re.compile(pronoun, re.IGNORECASE) for pronoun in ["ele", "ela", "eles", "elas"]
+    ]
+
+    return _pronoun_coreference_average(conllu, subject_pronouns_exp)
 
 
 def _coreference_pronoun_ratio(sents: list[Span]) -> float: ...
 
 
+def _demonstrative_pronoun_ratio_ud(conllu: Conllu) -> float:
+    demonstrative_pronouns_ratio = []
+
+    return _pronoun_coreference_average(conllu, demonstrative_pronouns_ratio)
+
+
 def _demonstrative_pronoun_ratio(sents: list[Span]) -> float: ...
 
 
-def _foreign_word_ratio(sents: list[Span]) -> float: ...
+def _pronoun_coreference_average(
+    conllu: Conllu, pronouns_exp: list[re.Pattern[str]]
+) -> float:
+    mean_for_sentence = []
+
+    for previous_sentence, current_sentence in pairwise(conllu.sentences):
+        subject_pronouns = list(
+            filter(
+                lambda tok: any([re.match(exp, tok.form) for exp in pronouns_exp]),
+                current_sentence.tokens,
+            )
+        )
+
+        possible_coreferenced = []
+        for pronoun in subject_pronouns:
+            for token in previous_sentence.tokens:
+                gender = token.feats.get("Gender")
+                number = token.feats.get("Number")
+
+                if (
+                    (gender and number)
+                    and gender == token.feats.get("Gender")
+                    and number == token.feats.get("Number")
+                ):
+                    possible_coreferenced.append(token)
+        mean_for_sentence.append(len(possible_coreferenced) / len(subject_pronouns))
+
+    return mean(mean_for_sentence)
 
 
 @transformer
@@ -214,7 +330,7 @@ def list_complex_words(
     with open(frequencies_file, "rb") as file:
         frequencies = pickle.load(file)
     for word in document.text.split(" "):
-        if is_valid_word(word) and word.lower() in frequencies:
+        if is_valid_word(word) and word.lower() not in frequencies:
             result_words.add(word)
 
     return document, result_words

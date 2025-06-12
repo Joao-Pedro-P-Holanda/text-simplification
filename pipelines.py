@@ -15,6 +15,7 @@ from file_processing_steps import (
 )
 from metrics_steps import (
     extract_document_statistics,
+    extract_document_statistics_port_parser,
     group_documents_by_model,
     list_complex_words,
     extract_min_nilc_metrix,
@@ -101,6 +102,16 @@ extract_nilc_metrix_from_original_simplified_texts: Transformer[list[str], None]
 ) >> store_results_as_csv(task_type="nilc-metrix", doc_type="reference-simplified")
 
 
+extract_metrics_from_generated_texts_port_tokenizer: Transformer[list[str], None] = Map(
+    read_markdown_file
+    >> transform_document_to_metric_operations
+    >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
+    >> extract_document_statistics_port_parser
+) >> store_results_as_csv(
+    task_type="readability-indexes", doc_type="generated-simplified", mode="a"
+)
+
+
 extract_metrics_from_generated_texts: Transformer[list[str], None] = Map(
     read_markdown_file
     >> transform_document_to_metric_operations
@@ -112,6 +123,16 @@ extract_metrics_from_generated_texts: Transformer[list[str], None] = Map(
     task_type="readability-indexes", doc_type="generated-simplified"
 )
 
+extract_metrics_from_complete_texts_port_tokenizer: Transformer[list[str], None] = Map(
+    read_markdown_file
+    >> transform_document_to_metric_operations
+    >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
+    >> extract_document_statistics_port_parser
+) >> store_results_as_csv(
+    task_type="readability-indexes", doc_type="reference-complete", mode="a"
+)
+
+
 extract_metrics_from_complete_texts: Transformer[list[str], None] = Map(
     read_markdown_file
     >> transform_document_to_metric_operations
@@ -121,6 +142,18 @@ extract_metrics_from_complete_texts: Transformer[list[str], None] = Map(
     )
 ) >> store_results_as_csv(
     task_type="readability-indexes", doc_type="reference-complete"
+)
+
+
+extract_metrics_from_already_simplified_texts_port_tokenizer: Transformer[
+    list[str], None
+] = Map(
+    read_markdown_file
+    >> transform_document_to_metric_operations
+    >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
+    >> extract_document_statistics_port_parser
+) >> store_results_as_csv(
+    task_type="readability-indexes", doc_type="reference-simplified", mode="a"
 )
 
 extract_metrics_from_already_simplfied_texts: Transformer[list[str], None] = Map(
