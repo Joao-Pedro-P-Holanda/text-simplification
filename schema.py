@@ -28,10 +28,7 @@ DocumentType = Literal[
 ]
 
 TaskType = Literal[
-    "readability-indexes",
-    "d-sari",
-    "nilc-metrix",
-    "embedding-similarity",
+    "readability-indexes", "d-sari", "nilc-metrix", "embedding-similarity", "ud-pipe"
 ]
 
 
@@ -190,24 +187,31 @@ class DocumentStatistics(DocumentResultModel):
         return self.number_of_syllables / self.number_of_tokens
 
 
+class UDNilcMetrics(DocumentResultModel):
+    non_svo_ratio: float
+    passive_voice_ratio: float
+    words_before_main_verb_mean: float
+    personal_pronoun_ratio: float
+    coreference_pronoun_ratio: float
+    demonstrative_pronoun_ratio: float
+    logical_operator_ratio: float
+    connective_ratio: float
+    long_sentence_ratio: float
+
+    foreign_word_ratio: float
+
+
 class NILCMetrics(DocumentResultModel):
     sentences_per_paragraph: float  # ok
-    # passive_ratio: float
-    # postponed_subject_ratio: float
-    # non_svo_ratio: float
     # sentences_with_one_clause: float
     # sentences_with_seven_more_clauses: float
-    # words_before_main_verb: float
-    # content_word_max: float
-    # content_word_min: float
+
     function_words: float  # ok
     ratio_function_to_content_words: float  # ok
     adjectives_ambiguity: float  # ok
     adverbs_ambiguity: float  # ok
     nouns_ambiguity: float  # ok
     verbs_ambiguity: float  # ok
-    # content_words_ambiguity: float
-    # simple_word_ratio: float
     # coreference_pronoun_ratio: float
     # demonstrative_pronoun_ratio: float
 
