@@ -20,6 +20,7 @@ from metrics_steps import (
     list_complex_words,
     extract_min_nilc_metrix,
     transform_document_to_metric_operations,
+    extract_min_nilc_metrix_ud,
 )
 from request_steps import (
     request_simplfied_text_from_chat_model,
@@ -62,16 +63,26 @@ simplify_pdf_files_with_model: Transformer[
     )
 )
 
-
-compute_embeddings_similarity_for_complete_and_generated_texts: Transformer[
-    list[tuple[str, str]], None
-] = Map(
-    forward[tuple[str, str]]()
-    >> (pick_first >> read_markdown_file, pick_second >> read_markdown_file)
-    >> compare_embedded_sentences_similarity("nomic-ai/nomic-embed-text-v2-moe")
-) >> store_results_as_csv(
-    task_type="embedding-similarity",
+extract_udpipe_nilc_metrix_from_original_complete_texts: Transformer[
+    list[str], None
+] = Map(read_markdown_file >> extract_min_nilc_metrix_ud) >> store_results_as_csv(
+    task_type="ud-pipe", doc_type="reference-complete"
 )
+
+
+extract_udpipe_nilc_metrix_from_original_simplified_texts: Transformer[
+    list[str], None
+] = Map(read_markdown_file >> extract_min_nilc_metrix_ud) >> store_results_as_csv(
+    task_type="ud-pipe", doc_type="reference-simplified"
+)
+
+
+extract_udpipe_nilc_metrix_from_generated_simplified_texts: Transformer[
+    list[str], None
+] = Map(read_markdown_file >> extract_min_nilc_metrix_ud) >> store_results_as_csv(
+    task_type="ud-pipe", doc_type="generated-simplified"
+)
+
 
 extract_nilc_metrix_from_original_complete_texts: Transformer[list[str], None] = Map(
     read_markdown_file
@@ -105,7 +116,9 @@ extract_nilc_metrix_from_original_simplified_texts: Transformer[list[str], None]
 extract_metrics_from_generated_texts_port_tokenizer: Transformer[list[str], None] = Map(
     read_markdown_file
     >> transform_document_to_metric_operations
-    >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
+    >> list_complex_words(
+        frequencies_file="./data/frequencias_todos_os_corpora.pkl", tokenizer="udpipe"
+    )
     >> extract_document_statistics_port_parser
 ) >> store_results_as_csv(
     task_type="readability-indexes", doc_type="generated-simplified", mode="a"
@@ -115,7 +128,12 @@ extract_metrics_from_generated_texts_port_tokenizer: Transformer[list[str], None
 extract_metrics_from_generated_texts: Transformer[list[str], None] = Map(
     read_markdown_file
     >> transform_document_to_metric_operations
-    >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
+    >> list_complex_words(
+        frequencies_file="./data/frequencias_todos_os_corpora.pkl",
+        tokenizer="spacy",
+        nlp_loader=load_spacy_model,
+        model_name="pt_core_news_lg",
+    )
     >> extract_document_statistics(
         nlp_loader=load_spacy_model, model_name="pt_core_news_lg"
     )
@@ -126,7 +144,9 @@ extract_metrics_from_generated_texts: Transformer[list[str], None] = Map(
 extract_metrics_from_complete_texts_port_tokenizer: Transformer[list[str], None] = Map(
     read_markdown_file
     >> transform_document_to_metric_operations
-    >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
+    >> list_complex_words(
+        frequencies_file="./data/frequencias_todos_os_corpora.pkl", tokenizer="udpipe"
+    )
     >> extract_document_statistics_port_parser
 ) >> store_results_as_csv(
     task_type="readability-indexes", doc_type="reference-complete", mode="a"
@@ -136,7 +156,12 @@ extract_metrics_from_complete_texts_port_tokenizer: Transformer[list[str], None]
 extract_metrics_from_complete_texts: Transformer[list[str], None] = Map(
     read_markdown_file
     >> transform_document_to_metric_operations
-    >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
+    >> list_complex_words(
+        frequencies_file="./data/frequencias_todos_os_corpora.pkl",
+        tokenizer="spacy",
+        nlp_loader=load_spacy_model,
+        model_name="pt_core_news_lg",
+    )
     >> extract_document_statistics(
         nlp_loader=load_spacy_model, model_name="pt_core_news_lg"
     )
@@ -150,7 +175,9 @@ extract_metrics_from_already_simplified_texts_port_tokenizer: Transformer[
 ] = Map(
     read_markdown_file
     >> transform_document_to_metric_operations
-    >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
+    >> list_complex_words(
+        frequencies_file="./data/frequencias_todos_os_corpora.pkl", tokenizer="udpipe"
+    )
     >> extract_document_statistics_port_parser
 ) >> store_results_as_csv(
     task_type="readability-indexes", doc_type="reference-simplified", mode="a"
@@ -159,7 +186,12 @@ extract_metrics_from_already_simplified_texts_port_tokenizer: Transformer[
 extract_metrics_from_already_simplfied_texts: Transformer[list[str], None] = Map(
     read_markdown_file
     >> transform_document_to_metric_operations
-    >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
+    >> list_complex_words(
+        frequencies_file="./data/frequencias_todos_os_corpora.pkl",
+        tokenizer="spacy",
+        nlp_loader=load_spacy_model,
+        model_name="pt_core_news_lg",
+    )
     >> extract_document_statistics(
         nlp_loader=load_spacy_model, model_name="pt_core_news_lg"
     )
