@@ -198,3 +198,15 @@ extract_metrics_from_already_simplfied_texts: Transformer[list[str], None] = Map
 ) >> store_results_as_csv(
     task_type="readability-indexes", doc_type="reference-simplified"
 )
+
+compute_embeddings_similarity_for_complete_and_generated_texts: Transformer[list[tuple[str,str]],None] = forward[list[tuple[str,str]]]() >> Map(
+        forward[tuple[str,str]]() >>
+        ( pick_first
+          >> read_markdown_file
+          >> transform_document_to_metric_operations,
+          pick_second
+          >> read_markdown_file
+          >> transform_document_to_metric_operations
+        )
+        >> compare_embedded_sentences_similarity(model_name="nomic-ai/nomic-embed-text-v2-moe")
+) >> store_results_as_csv()
