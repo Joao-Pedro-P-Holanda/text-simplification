@@ -21,7 +21,7 @@ ModelOptions = Literal[
     "gemini-2.5-pro-preview-05-06",
 ]
 
-EmbeddingModelOptions = Literal["nomic-ai/nomic-embed-text-v2-moe"]
+EmbeddingModelOptions = Literal["nomic-embed-text-v2","nomic-embed-text-v1.5"]
 
 DocumentType = Literal[
     "reference-complete", "reference-simplified", "generated-simplified"

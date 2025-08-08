@@ -208,5 +208,5 @@ compute_embeddings_similarity_for_complete_and_generated_texts: Transformer[list
           >> read_markdown_file
           >> transform_document_to_metric_operations
         )
-        >> compare_embedded_sentences_similarity(model_name="nomic-ai/nomic-embed-text-v2-moe")
+        >> compare_embedded_sentences_similarity(model_name="nomic-embed-text-v1.5")
 ) >> store_results_as_csv()
