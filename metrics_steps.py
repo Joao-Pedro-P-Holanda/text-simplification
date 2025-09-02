@@ -29,7 +29,6 @@ from utils import (
     remove_enumerations,
     remove_extra_whitespaces,
     remove_markdown_tables,
-    split_sentences,
     strip_special_characters,
 )
 
@@ -43,7 +42,6 @@ def transform_document_to_metric_operations(document: Document) -> Document:
         >> strip_special_characters
         >> remove_extra_whitespaces
         >> remove_enumerations
-        >> split_sentences
         >> remove_extra_whitespaces
     )(document.text)
 

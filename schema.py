@@ -14,7 +14,6 @@ ModelOptions = Literal[
     "qwen2.5:14b",
     "qwen2.5-coder:32b",
     "deepseek-r1:14b",
-    "granite-code:8b",
     "granite3-dense:2b",
     "granite3-dense:8b",
     "gemini-2.5-flash-preview-04-17",
