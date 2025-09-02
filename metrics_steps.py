@@ -650,7 +650,7 @@ def _foreign_word_ratio(conllu: Conllu) -> float:
 
     for token in tokens:
         if token.feats and token.feats.get("Foreign") == "Yes":
-            foreign_words.add(token.form)
+            foreign_words.add(token.form.lower())
 
     return len(foreign_words) / (len(conllu.types) or 1)
 
