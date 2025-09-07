@@ -1,6 +1,6 @@
 # Scripts de simplificação textual
 
-Esse repositório contém os scripts de simplificação textual com LLMs utilizados para meu trabalho de conclusão de curso.
+Esse repositório contém os scripts de simplificação textual seguindo padrões de linguagem simples com LLMs disponíveis no Ollama e os modelos Gemini 2.5 Flash e Pro.
 
 O prompt utilizado pelo modelo foi baseado no disponível [neste link](https://github.com/bryankhelven/coherence-findings/blob/main/Prompt1_Local_Coherence_Analysis_Prompt.txt).
 
