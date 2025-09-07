@@ -1,8 +1,9 @@
 """
-This module scrape the complete version of UFC Inova notices
+This module scrape the complete version of OMITTED university notices
 """
 
 import asyncio
+from dotenv import load_dotenv
 import re
 from bs4 import BeautifulSoup
 import os
@@ -15,8 +16,7 @@ def _id_for_file(count: int, year: int):
 
 
 async def main():
-    base_path = "https://ufcinova.ufc.br/pt/"
-
+    base_path = os.getenv("BASE_URL")
     years = range(2020, 2026)
 
     for year in years:
@@ -50,9 +50,7 @@ def _selection_for_year(soup: BeautifulSoup, year: int) -> list[str]:
     links = []
     match year:
         case 2025:
-            exceptions = [
-                "https://prointer.ufc.br/wp-content/uploads/2025/01/edital-001-2025-hackathon-tre-ufc-publicado.pdf"
-            ]
+            exceptions = [os.getenv("EXCEPTION_URL")]
 
         case _:
             exceptions = []
@@ -70,4 +68,5 @@ def _selection_for_year(soup: BeautifulSoup, year: int) -> list[str]:
 
 
 if __name__ == "__main__":
+    load_dotenv()
     asyncio.run(main())
