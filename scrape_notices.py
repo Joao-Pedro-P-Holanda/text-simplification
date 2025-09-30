@@ -12,7 +12,7 @@ from urllib.parse import urljoin
 
 
 def _id_for_file(count: int, year: int):
-    return f"{year}_ufc_inova_{count}"
+    return f"{year}_OMITTED_{count}"
 
 
 async def main():
