@@ -20,7 +20,7 @@ ModelOptions = Literal[
     "gemini-2.5-pro-preview-05-06",
 ]
 
-EmbeddingModelOptions = Literal["nomic-embed-text-v2","nomic-embed-text-v1.5"]
+EmbeddingModelOptions = Literal["nomic-embed-text-v2", "nomic-embed-text-v1.5"]
 
 DocumentType = Literal[
     "reference-complete", "reference-simplified", "generated-simplified"
@@ -32,7 +32,6 @@ TaskType = Literal[
 
 
 class Config(TypedDict):
-    models: set[ModelOptions]
     llm_api_key: SecretStr
     llm_url: str
     nilc_metrix_url: HttpUrl

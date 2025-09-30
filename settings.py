@@ -57,8 +57,7 @@ def load_spacy_model(name: str):
 
 
 config: Config = {
-    "models": {"cow/gemma2_tools:2b"},
     "llm_api_key": SecretStr(os.environ["LLM_JWT"]),
-    "llm_url": "http://ollama.atlab.ufc.br:8080/ollama/",
+    "llm_url": os.environ["OLLAMA_HOST"],
     "nilc_metrix_url": HttpUrl(os.getenv("NILC_METRIX_URL", "")),
 }
