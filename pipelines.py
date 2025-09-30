@@ -124,23 +124,6 @@ extract_metrics_from_generated_texts_port_tokenizer: Transformer[list[str], None
     task_type="readability-indexes", doc_type="generated-simplified", mode="a"
 )
 
-
-extract_metrics_from_generated_texts: Transformer[list[str], None] = Map(
-    read_markdown_file
-    >> transform_document_to_metric_operations
-    >> list_complex_words(
-        frequencies_file="./data/frequencias_todos_os_corpora.pkl",
-        tokenizer="spacy",
-        nlp_loader=load_spacy_model,
-        model_name="pt_core_news_lg",
-    )
-    >> extract_document_statistics(
-        nlp_loader=load_spacy_model, model_name="pt_core_news_lg"
-    )
-) >> store_results_as_csv(
-    task_type="readability-indexes", doc_type="generated-simplified"
-)
-
 extract_metrics_from_complete_texts_port_tokenizer: Transformer[list[str], None] = Map(
     read_markdown_file
     >> transform_document_to_metric_operations
@@ -150,23 +133,6 @@ extract_metrics_from_complete_texts_port_tokenizer: Transformer[list[str], None]
     >> extract_document_statistics_port_parser
 ) >> store_results_as_csv(
     task_type="readability-indexes", doc_type="reference-complete", mode="a"
-)
-
-
-extract_metrics_from_complete_texts: Transformer[list[str], None] = Map(
-    read_markdown_file
-    >> transform_document_to_metric_operations
-    >> list_complex_words(
-        frequencies_file="./data/frequencias_todos_os_corpora.pkl",
-        tokenizer="spacy",
-        nlp_loader=load_spacy_model,
-        model_name="pt_core_news_lg",
-    )
-    >> extract_document_statistics(
-        nlp_loader=load_spacy_model, model_name="pt_core_news_lg"
-    )
-) >> store_results_as_csv(
-    task_type="readability-indexes", doc_type="reference-complete"
 )
 
 
