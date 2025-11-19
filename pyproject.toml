@@ -29,6 +29,8 @@ dependencies = [
     "notebook>=7.4.2",
     "jupyterlab>=4.4.2",
     "nomic>=3.5.3",
+    "deepeval>=3.7.2",
+    "openai==2.8.1",
 ]
 
 [tool.uv.sources]
