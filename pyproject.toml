@@ -35,4 +35,9 @@ dependencies = [
 
 [tool.uv.sources]
 pt-core-news-lg = { url = "https://github.com/explosion/spacy-models/releases/download/pt_core_news_lg-3.8.0/pt_core_news_lg-3.8.0-py3-none-any.whl" }
+[dependency-groups]
+dev = [
+    "black>=25.9.0",
+    "seaborn>=0.13.2",
+]
 
