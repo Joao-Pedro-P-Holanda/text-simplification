@@ -42,12 +42,12 @@ for pair in paired_documents:
     print([d.path for d in pair])
 
 
-@pytest.mark.parametrize("original_document,simplified_doc", paired_documents[:1])
-def test_simplified_document_dont_contain_hallucinations(
-    original_document, simplified_doc
-):
+def test_simplified_document_dont_contain_hallucinations():
+    original_document = read_markdown_file("")
+    simplified_document = read_markdown_file("")
+
     test_case = LLMTestCase(
-        input=original_document.text, actual_output=simplified_doc.text
+        input=original_document.text, actual_output=simplified_document.text
     )
     headers = {
         "Authorization": f"Bearer {config['llm_api_key'].get_secret_value()}",
