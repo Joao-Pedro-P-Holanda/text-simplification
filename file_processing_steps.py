@@ -8,7 +8,7 @@ from typing import Literal
 import pymupdf4llm
 from gloe import partial_transformer, transformer
 
-from schema import Document, DocumentResultModel, DocumentType, TaskType
+from schema import Document, DocumentResultModel, DocumentType, TaskType, ModelOptions
 import re
 
 
@@ -98,3 +98,12 @@ def save_file_without_formatting(document: Document) -> None:
     logger.info(f"Stripping markdown formating for file {document.path}")
     with open(new_path, "w") as stripped_file:
         stripped_file.write(document.text)
+
+@transformer
+def remove_think_tags(input:tuple[Document, ModelOptions]) -> tuple[Document, str]:
+    document, model = input
+    if model == "deepseek-r1:14b":
+        document.text = re.sub(re.compile("<think>.*?</think>",re.DOTALL), "", document.text)
+
+    return document, model
+

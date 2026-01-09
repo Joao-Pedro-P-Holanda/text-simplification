@@ -12,6 +12,7 @@ from file_processing_steps import (
     convert_pdf_file_to_markdown_text,
     read_markdown_file,
     store_results_as_csv,
+    remove_think_tags,
 )
 from metrics_steps import (
     extract_document_statistics,
@@ -37,7 +38,6 @@ DATA_DIR = Path(os.path.join(os.path.dirname(__file__), "data"))
 def is_markdown(path: str) -> bool:
     return path.endswith(".md")
 
-
 simplify_pdf_files_with_model: Transformer[
     tuple[list[str], ModelOptions], list[Any]
 ] = (
@@ -59,6 +59,7 @@ simplify_pdf_files_with_model: Transformer[
         request_simplfied_text_from_chat_model(
             prompt_file="prompt_simplify_document.txt",
         )
+        >> remove_think_tags
         >> save_document_text_on_markdown_file(doc_type="generated-simplified")
     )
 )
