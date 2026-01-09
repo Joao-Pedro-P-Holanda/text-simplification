@@ -3,15 +3,13 @@ import sys
 from glob import glob
 from itertools import groupby
 
-from langchain_ollama import ChatOllama
-import pytest
-from deepeval import assert_test
-from deepeval.metrics import GEval, HallucinationMetric
+from deepeval import evaluate
+from deepeval.metrics import GEval
 from deepeval.metrics.g_eval.utils import Rubric
 from deepeval.test_case import LLMTestCase, LLMTestCaseParams
 
 from file_processing_steps import read_markdown_file
-from llama_model import OllamaDeepeval
+from llama_model import CustomOpenWebUIModel
 from settings import config
 from test.conftest import base_original_path, simplified_path
 
@@ -22,58 +20,64 @@ parent = os.path.dirname(dir)
 
 sys.path.append(parent)
 
+original_complete_path = str(base_original_path() / "complete") + r"\2025*.md"
+original_simplified_path = str(base_original_path() / "simplified") + r"\2025*.md"
 
-original_files = glob(f"{base_original_path()}/complete/2025*_stripped.md") + glob(
-    f"{base_original_path()}/simplified/2025*_stripped.md"
-)
-simplified_files = glob(
-    f"{simplified_path('gemini-2.5-flash-preview-04-17')}/2025*_stripped.md"
-)
+original_files = glob(original_complete_path) + glob(original_simplified_path)
+
+ai_simplified_path = str(simplified_path("phi3-latest")) + r"\2025*.md"
+simplified_files = glob(ai_simplified_path)
 
 documents = [read_markdown_file(file) for file in original_files + simplified_files]
 
-paired_documents = []
-for k, g in groupby(
-    sorted(documents, key=lambda x: (x.name, x.path)), key=lambda x: x.name
-):
-    paired_documents.append(tuple(g))
+doc_pairs = []
+for k, g in groupby(sorted(documents, key=lambda x: x.name), key=lambda x: x.name):
+    doc_pairs.append(tuple(g))
 
-for pair in paired_documents:
-    print([d.path for d in pair])
+#
+# @pytest.mark.parametrize(
+#     "original_document,simplified_doc", doc_pairs[:2]
+# )
+# def test_simplified_document_dont_contain_hallucinations(
+#     original_document, simplified_doc
+# ):
+#     test_case = LLMTestCase(
+#         input=original_document.text, actual_output=simplified_doc.text
+#     )
+#     headers = {
+#         "Authorization": f"Bearer {config['llm_api_key'].get_secret_value()}",
+#         "Accept": "application/json",
+#         "Content-Type": "application/json",
+#     }
+#     metric = HallucinationMetric(
+#         threshold=0.5,
+#         model=OllamaDeepeval(
+#             ChatOllama(
+#                 model="gpt-oss:20b",
+#                 temperature=0.8,
+#                 base_url=config["llm_url"],
+#                 client_kwargs={"headers": headers, "timeout": 360},
+#             )
+#         ),
+#         strict_mode=True,
+#     )
+#
+#     assert_test(test_case=test_case, metrics=[metric])
 
 
-@pytest.mark.parametrize("original_document,simplified_doc", paired_documents[:1])
-def test_simplified_document_dont_contain_hallucinations(
-    original_document, simplified_doc
-):
-    test_case = LLMTestCase(
-        input=original_document.text, actual_output=simplified_doc.text
-    )
-    headers = {
-        "Authorization": f"Bearer {config['llm_api_key'].get_secret_value()}",
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-    }
-    metric = HallucinationMetric(
-        threshold=0.5,
-        model=OllamaDeepeval(
-            ChatOllama(
+def get_criteria_plain_language() -> list[GEval]:
+    model= CustomOpenWebUIModel(
                 model="gpt-oss:20b",
-                temperature=0.8,
+                api_key=config["llm_api_key"].get_secret_value(),
                 base_url=config["llm_url"],
-                client_kwargs={"headers": headers, "timeout": 360},
-            )
-        ),
-        strict_mode=True,
-    )
+                # client_kwargs={"headers": headers, "timeout": 360},
+           )
 
-    assert_test(test_case=test_case, metrics=[metric])
-
-
-def get_criteria_plain_language():
     return [
         GEval(
             name="Clareza e Simplicidade",
+            model=model,
+            strict_mode=True,
             criteria=(
                 """
                 Verifique se o texto simplificado é claro e direto.
@@ -90,7 +94,7 @@ def get_criteria_plain_language():
             evaluation_params=[
                 LLMTestCaseParams.INPUT,  # Edital original
                 LLMTestCaseParams.ACTUAL_OUTPUT,  # Texto em Linguagem Simples
-                LLMTestCaseParams.CONTEXT,
+                # LLMTestCaseParams.CONTEXT,
             ],
             verbose_mode=True,
             rubric=[
@@ -114,6 +118,8 @@ def get_criteria_plain_language():
         ),
         GEval(
             name="Fidelidade ao Conteúdo Original",
+            model=model,
+            strict_mode=True,
             criteria=(
                 "Avalie se todas as informações essenciais do edital original foram preservadas "
                 "e transmitidas corretamente no texto simplificado, sem distorções ou omissões críticas."
@@ -121,7 +127,7 @@ def get_criteria_plain_language():
             evaluation_params=[
                 LLMTestCaseParams.INPUT,
                 LLMTestCaseParams.ACTUAL_OUTPUT,
-                LLMTestCaseParams.CONTEXT,
+                # LLMTestCaseParams.CONTEXT,
             ],
             verbose_mode=True,
             rubric=[
@@ -145,6 +151,8 @@ def get_criteria_plain_language():
         ),
         GEval(
             name="Organização e Estrutura",
+            model=model,
+            strict_mode=True,
             criteria=(
                 "Avalie se o texto simplificado apresenta uma estrutura lógica e bem organizada, "
                 "com parágrafos ou seções que facilitam a leitura e o entendimento, "
@@ -153,7 +161,7 @@ def get_criteria_plain_language():
             evaluation_params=[
                 LLMTestCaseParams.INPUT,
                 LLMTestCaseParams.ACTUAL_OUTPUT,
-                LLMTestCaseParams.CONTEXT,
+                # LLMTestCaseParams.CONTEXT,
             ],
             verbose_mode=True,
             rubric=[
@@ -176,3 +184,9 @@ def get_criteria_plain_language():
             ],
         ),
     ]
+
+metrics = get_criteria_plain_language()
+test_cases = [LLMTestCase( input=pair[0].text , actual_output=pair[1].text, ) for pair in doc_pairs[:1]]
+
+evaluate(test_cases=test_cases, metrics=metrics)
+        
