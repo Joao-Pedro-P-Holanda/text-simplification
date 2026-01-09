@@ -76,15 +76,22 @@ def convert_pdf_file_to_markdown_file(path: str) -> pathlib.Path:
 
 @partial_transformer
 def save_document_text_on_markdown_file(
-    input: tuple[Document, str], doc_type: DocumentType
+    input: tuple[Document, str, str], doc_type: DocumentType
 ) -> None:
-    document, model = input
+    document, model, execution_uuid = input
 
+    # replaces double dots to save correctly on Windows
     model_path = re.sub("/|:", "-", model)
+    store_directory = (
+        f"./result/text-simplification/{doc_type}/{execution_uuid}/{model_path}"
+    )
 
-    os.makedirs(f"./result/text-simplification/{doc_type}/{model_path}", exist_ok=True)
+    os.makedirs(
+        store_directory,
+        exist_ok=True,
+    )
     with open(
-        f"./result/text-simplification/{doc_type}/{model_path}/{document.name}.md",
+        f"{store_directory}/{document.name}.md",
         "w",
         encoding="utf-8",
     ) as file:

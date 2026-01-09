@@ -1,14 +1,10 @@
 # default configs
-from functools import lru_cache
 import logging.config
 import os
-import spacy
 from dotenv import load_dotenv
 from pydantic import HttpUrl, SecretStr
 from schema import Config
-import spacy_syllables
 
-_ = spacy_syllables
 
 logging_config = {
     "version": 1,
@@ -49,15 +45,7 @@ logging.config.dictConfig(logging_config)
 _ = load_dotenv()
 
 
-@lru_cache
-def load_spacy_model(name: str):
-    result = spacy.load(name)
-    result.add_pipe("syllables", after="morphologizer", config={"lang": "pt_BR"})
-    return result
-
-
 config: Config = {
-    "llm_api_key": SecretStr(os.environ["LLM_JWT"]),
+    "llm_api_key": SecretStr(os.environ["LLM_API_KEY"]),
     "llm_url": os.environ["OLLAMA_HOST"],
-    "nilc_metrix_url": HttpUrl(os.getenv("NILC_METRIX_URL", "")),
 }

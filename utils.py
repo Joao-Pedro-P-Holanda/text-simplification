@@ -38,17 +38,6 @@ def strip_special_characters(text: str) -> str:
 
 
 @transformer
-def split_sentences(text: str) -> str:
-    """
-    adds new lines between sentences for tokenization,
-    a sentence is a whole string that ends with a . or ;
-    """
-
-    result = re.sub(re.compile(r"(\w\.|;)\s"), r"\1\n\n", text)
-    return result
-
-
-@transformer
 def remove_markdown_tables(text: str) -> str:
     lines = []
     for line in text.splitlines(keepends=True):
