@@ -1,7 +1,7 @@
 from typing import Literal, TypedDict
 
 from langchain_core.documents import Document as LangchainDocument
-from pydantic import BaseModel, SecretStr, computed_field, HttpUrl
+from pydantic import BaseModel, SecretStr, computed_field
 from pathlib import Path
 import re
 
@@ -34,7 +34,6 @@ TaskType = Literal[
 class Config(TypedDict):
     llm_api_key: SecretStr
     llm_url: str
-    nilc_metrix_url: HttpUrl
 
 
 class Document(BaseModel):
@@ -77,6 +76,8 @@ class Document(BaseModel):
 
         return int(splits[0])
 
+    def __repr__(self):
+        return f"{self.name} ({self.path}"
 
 class DocumentResultModel(BaseModel):
     id: int
