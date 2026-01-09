@@ -1,27 +1,42 @@
-from typing import override
-from langchain_ollama import ChatOllama
-from deepeval.models.base_model import DeepEvalBaseLLM
+import httpx
+from deepeval.models import DeepEvalBaseLLM
 
 
-class OllamaDeepeval(DeepEvalBaseLLM):
-    def __init__(self, model: ChatOllama):
-        self.model: ChatOllama = model
+class CustomOpenWebUIModel(DeepEvalBaseLLM):
+    def __init__(self, model, api_key, base_url):
+        self.model = model
+        self.api_key = api_key
+        self.base_url = base_url
 
-    @override
     def load_model(self):
         return self.model
 
-    @override
     def generate(self, prompt: str) -> str:
-        chat_model = self.load_model()
-        return chat_model.invoke(prompt).content
+        url = f"{self.base_url}/chat/completions"
+        headers = {
+            'Authorization': f'Bearer {self.api_key}',
+            'Content-Type': 'application/json'
+        }
+        data = {
+            "model": self.model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        }
 
-    @override
+        response = httpx.post(url, headers=headers, json=data,timeout=None)
+
+        if response.status_code == 200:
+            result = response.json()
+            return result['choices'][0]['message']['content']
+        else:
+            raise Exception(f"API Error: {response.status_code} - {response.text}")
+
     async def a_generate(self, prompt: str) -> str:
-        chat_model = self.load_model()
-        res = await chat_model.ainvoke(prompt)
-        return res.content
+        return self.generate(prompt)
 
-    @override
-    def get_model_name(self) -> str:
-        return self.model.model
+    def get_model_name(self):
+        return self.model
