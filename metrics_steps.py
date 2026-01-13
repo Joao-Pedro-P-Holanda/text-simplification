@@ -38,7 +38,7 @@ def remove_duplicate_captions(document: Document) -> Document:
         escaped_caption = re.escape(caption)
         # using small number to avoid wrongly parsed links, such as values in
         # the end of lines
-        if len(escaped_caption) > 5:
+        if len(escaped_caption) > 10:
             re.sub(rf"(?<!\[){escaped_caption}(?!\])", "", document.text)
     return document
 
