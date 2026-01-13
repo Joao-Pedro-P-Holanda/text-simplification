@@ -20,8 +20,6 @@ ModelOptions = Literal[
     "gemini-2.5-pro-preview-05-06",
 ]
 
-EmbeddingModelOptions = Literal["nomic-embed-text-v2", "nomic-embed-text-v1.5"]
-
 DocumentType = Literal[
     "reference-complete", "reference-simplified", "generated-simplified"
 ]
@@ -39,7 +37,7 @@ class Config(TypedDict):
 class Document(BaseModel):
     path: str
     text: str
-    langchain_documents: list[LangchainDocument] = []
+    langchain_documents: list[str] = []
 
     @computed_field
     @property
@@ -78,6 +76,7 @@ class Document(BaseModel):
 
     def __repr__(self):
         return f"{self.name} ({self.path}"
+
 
 class DocumentResultModel(BaseModel):
     id: int
@@ -199,83 +198,3 @@ class UDNilcMetrics(DocumentResultModel):
 
     foreign_word_ratio: float
 
-
-class NILCMetrics(DocumentResultModel):
-    sentences_per_paragraph: float  # ok
-    # sentences_with_one_clause: float
-    # sentences_with_seven_more_clauses: float
-
-    function_words: float  # ok
-    ratio_function_to_content_words: float  # ok
-    adjectives_ambiguity: float  # ok
-    adverbs_ambiguity: float  # ok
-    nouns_ambiguity: float  # ok
-    verbs_ambiguity: float  # ok
-    # coreference_pronoun_ratio: float
-    # demonstrative_pronoun_ratio: float
-
-    adjective_ratio: float
-    adverbs: float
-    content_words: float
-    flesch: float
-    syllables_per_content_word: float
-    words_per_sentence: float
-    noun_ratio: float
-    paragraphs: int
-    sentences: int
-    words: int
-    pronoun_ratio: float
-    verbs: float
-    logic_operators: float
-    and_ratio: float
-    if_ratio: float
-    or_ratio: float
-    negation_ratio: float
-    cw_freq: float
-    cw_freq_brwac: float
-    cw_freq_bra: float
-    min_cw_freq: float
-    min_cw_freq_brwac: float
-    min_freq_brwac: float
-    min_cw_freq_bra: float
-    min_freq_bra: float
-    freq_brwac: float
-    freq_bra: float
-    hypernyms_verbs: float
-    brunet: float
-    honore: float
-    personal_pronouns: float
-    ttr: float
-    conn_ratio: float
-    add_neg_conn_ratio: float
-    add_pos_conn_ratio: float
-    cau_neg_conn_ratio: float
-    cau_pos_conn_ratio: float
-    log_neg_conn_ratio: float
-    log_pos_conn_ratio: float
-    tmp_neg_conn_ratio: float
-    tmp_pos_conn_ratio: float
-    yngve: float
-    frazier: float
-    dep_distance: float
-    cross_entropy: float
-    content_density: float
-    adjacent_refs: float
-    anaphoric_refs: float
-    adj_arg_ovl: float
-    arg_ovl: float
-    adj_stem_ovl: float
-    stem_ovl: float
-    adj_cw_ovl: float
-    lsa_adj_mean: float
-    lsa_adj_std: float
-    lsa_all_mean: float
-    lsa_all_std: float
-    lsa_paragraph_mean: float
-    lsa_paragraph_std: float
-    lsa_givenness_mean: float
-    lsa_givenness_std: float
-    lsa_span_mean: float
-    lsa_span_std: float
-    negative_words: float
-    positive_words: float

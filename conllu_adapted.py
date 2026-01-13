@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from statistics import mean
 from itertools import chain
 from typing import Any
-import re
 from pyphen import Pyphen
 import string
 

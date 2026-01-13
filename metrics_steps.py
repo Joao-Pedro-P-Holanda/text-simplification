@@ -15,7 +15,6 @@ from conllu_adapted import Conllu, Token
 from schema import (
     Document,
     DocumentStatistics,
-    NILCMetrics,
     UDNilcMetrics,
 )
 from settings import config
@@ -115,24 +114,6 @@ def extract_min_nilc_metrix_ud(document: Document) -> UDNilcMetrics:
     )
 
 
-@transformer
-def extract_min_nilc_metrix(document: Document):
-    metrics_url = urljoin(
-        str(config["nilc_metrix_url"]), "/api/v1/metrix/_min/yyy?format=json"
-    )
-    headers = {"Content-Type": "text"}
-
-    logger.info(f"Requesting nilc-metrix for document {document.name} at {metrics_url}")
-    response = httpx.post(
-        metrics_url, headers=headers, content=document.text, timeout=None
-    )
-
-    response_dict = response.json()
-
-    response_dict.update(document.model_dump())
-
-    return NILCMetrics.model_validate(response_dict)
-
 
 def _non_svo_ud(conllu: Conllu):
     subject_deps = [
@@ -178,7 +159,7 @@ def _passive_ratio_ud(conllu: Conllu):
     """
     Returns the ratio of sentences that are in the passive voice
 
-    Currently, the porttinarit trained model couldn't find synthetic passive voice with
+    Currently, the PortParser trained model couldn't find synthetic passive voice with
     passive particles: "Vendem-se peixes"
     but the dependency relation expl:pass is a valid UD relation.
     """
