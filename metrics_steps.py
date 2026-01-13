@@ -36,7 +36,10 @@ def remove_duplicate_captions(document: Document) -> Document:
     url_captions = re.compile(r"\[(.*?)\]\(.*?\)").findall(document.text)
     for caption in url_captions:
         escaped_caption = re.escape(caption)
-        re.sub(rf"(?<!\[){escaped_caption}(?!\])", "", document.text)
+        # using small number to avoid wrongly parsed links, such as values in
+        # the end of lines
+        if len(escaped_caption) > 5:
+            re.sub(rf"(?<!\[){escaped_caption}(?!\])", "", document.text)
     return document
 
 
