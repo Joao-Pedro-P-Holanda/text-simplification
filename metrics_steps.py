@@ -6,9 +6,7 @@ from itertools import chain, groupby, pairwise
 from operator import attrgetter
 from statistics import mean
 from typing import Callable
-from urllib.parse import urljoin
 
-import httpx
 from gloe import partial_transformer, transformer
 
 from conllu_adapted import Conllu, Token
@@ -17,7 +15,6 @@ from schema import (
     DocumentStatistics,
     UDNilcMetrics,
 )
-from settings import config
 from utils import (
     is_valid_word,
     remove_enumerations,
@@ -27,6 +24,20 @@ from utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+@transformer
+def remove_duplicate_captions(document: Document) -> Document:
+    """
+    Remove text from url captions in the format !?[<caption>](url)
+    that is duplicated in the text
+    """
+
+    url_captions = re.compile(r"\[(.*?)\]\(.*?\)").findall(document.text)
+    for caption in url_captions:
+        escaped_caption = re.escape(caption)
+        re.sub(rf"(?<!\[){escaped_caption}(?!\])", "", document.text)
+    return document
 
 
 @transformer
