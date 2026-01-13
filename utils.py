@@ -1,6 +1,8 @@
 from collections.abc import Iterable
-from typing import TypeVar
-from gloe import transformer
+from contextvars import ContextVar
+from typing import Any, TypeVar
+from uuid import uuid1
+from gloe import transformer, partial_transformer
 import re
 
 
@@ -21,6 +23,12 @@ def pick_second(input: tuple[T, V]) -> V:
 @transformer
 def convert_to_list(input: T) -> list[T]:
     return [input]
+
+
+@partial_transformer
+def set_execution_uuid(input: Any,uuid_context:ContextVar) -> Any:
+    _ = uuid_context.set(uuid1(0, 0))
+    return input
 
 
 @transformer
