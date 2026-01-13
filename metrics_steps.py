@@ -114,7 +114,6 @@ def extract_min_nilc_metrix_ud(document: Document) -> UDNilcMetrics:
     )
 
 
-
 def _non_svo_ud(conllu: Conllu):
     subject_deps = [
         "nsubj",
@@ -498,8 +497,10 @@ def _foreign_word_ratio(conllu: Conllu) -> float:
     )
 
     for token in tokens:
-        if token.feats and token.feats.get("Foreign") == "Yes":
-            foreign_words.add(token.form.lower())
+        if (
+            token.feats and token.feats.get("Foreign") == "Yes"
+        ) or token.deprel == "flat:foreign":
+            foreign_words.add(token.lemma)
 
     return len(foreign_words) / (len(conllu.types) or 1)
 

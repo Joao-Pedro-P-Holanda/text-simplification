@@ -61,6 +61,17 @@ class Conllu:
         return set(texts)
 
     @property
+    def lemmas(self) -> set[str]:
+        tokens = chain.from_iterable([sentence.tokens for sentence in self.sentences])
+        texts = [
+            token.lemma
+            for token in tokens
+            if token.lemma and token.lemma not in string.punctuation
+        ]
+
+        return set(texts)
+
+    @property
     def syllables_count_pyphen(self) -> int:
         """
         Counts the number of syllables using pyphen dictionaries,
