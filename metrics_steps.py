@@ -1,4 +1,6 @@
+import csv
 import logging
+import os
 import pickle
 import re
 import string
@@ -503,7 +505,7 @@ def _connective_ratio_ud(conllu: Conllu) -> float:
     return len(occurrences) / len(words)
 
 
-def _foreign_word_ratio(conllu: Conllu) -> float:
+def _foreign_word_ratio(conllu: Conllu, write: bool = True) -> float:
     foreign_words = set()
 
     tokens = list(
@@ -516,7 +518,29 @@ def _foreign_word_ratio(conllu: Conllu) -> float:
         ) or token.deprel == "flat:foreign":
             foreign_words.add(token.lemma)
 
-    return len(foreign_words) / (len(conllu.types) or 1)
+    store_path = "foreign_words_predicted.csv"
+
+    if write:
+        number_of_lines = 0
+        if os.path.exists(store_path):
+            with open(store_path, "r") as f:
+                number_of_lines = len(f.readlines())
+
+        with open(store_path, "a", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=None)  # type:ignore
+
+            writer.fieldnames = ["name", "word"]
+            if number_of_lines == 0:
+                writer.writeheader()
+
+            for word in foreign_words:
+                data = {
+                    "name": conllu.path.stem.replace("_stripped.predicted", ""),
+                    "word": word,
+                }
+                writer.writerow(data)
+
+    return len(foreign_words) / (len(conllu.lemmas) or 1)
 
 
 def _pronoun_coreference_average(
