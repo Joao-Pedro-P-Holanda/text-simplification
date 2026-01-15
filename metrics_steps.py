@@ -1,4 +1,6 @@
+import csv
 import logging
+import os
 import pickle
 import re
 import string
@@ -6,19 +8,15 @@ from itertools import chain, groupby, pairwise
 from operator import attrgetter
 from statistics import mean
 from typing import Callable
-from urllib.parse import urljoin
 
-import httpx
 from gloe import partial_transformer, transformer
 
 from conllu_adapted import Conllu, Token
 from schema import (
     Document,
     DocumentStatistics,
-    NILCMetrics,
     UDNilcMetrics,
 )
-from settings import config
 from utils import (
     is_valid_word,
     remove_enumerations,
@@ -28,6 +26,23 @@ from utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+@transformer
+def remove_duplicate_captions(document: Document) -> Document:
+    """
+    Remove text from url captions in the format !?[<caption>](url)
+    that is duplicated in the text
+    """
+
+    url_captions = re.compile(r"\[(.*?)\]\(.*?\)").findall(document.text)
+    for caption in url_captions:
+        escaped_caption = re.escape(caption)
+        # using small number to avoid wrongly parsed links, such as values in
+        # the end of lines
+        if len(escaped_caption) > 10:
+            re.sub(rf"(?<!\[){escaped_caption}(?!\])", "", document.text)
+    return document
 
 
 @transformer
@@ -115,25 +130,6 @@ def extract_min_nilc_metrix_ud(document: Document) -> UDNilcMetrics:
     )
 
 
-@transformer
-def extract_min_nilc_metrix(document: Document):
-    metrics_url = urljoin(
-        str(config["nilc_metrix_url"]), "/api/v1/metrix/_min/yyy?format=json"
-    )
-    headers = {"Content-Type": "text"}
-
-    logger.info(f"Requesting nilc-metrix for document {document.name} at {metrics_url}")
-    response = httpx.post(
-        metrics_url, headers=headers, content=document.text, timeout=None
-    )
-
-    response_dict = response.json()
-
-    response_dict.update(document.model_dump())
-
-    return NILCMetrics.model_validate(response_dict)
-
-
 def _non_svo_ud(conllu: Conllu):
     subject_deps = [
         "nsubj",
@@ -178,7 +174,7 @@ def _passive_ratio_ud(conllu: Conllu):
     """
     Returns the ratio of sentences that are in the passive voice
 
-    Currently, the porttinarit trained model couldn't find synthetic passive voice with
+    Currently, the PortParser trained model couldn't find synthetic passive voice with
     passive particles: "Vendem-se peixes"
     but the dependency relation expl:pass is a valid UD relation.
     """
@@ -509,7 +505,7 @@ def _connective_ratio_ud(conllu: Conllu) -> float:
     return len(occurrences) / len(words)
 
 
-def _foreign_word_ratio(conllu: Conllu) -> float:
+def _foreign_word_ratio(conllu: Conllu, write: bool = True) -> float:
     foreign_words = set()
 
     tokens = list(
@@ -517,10 +513,35 @@ def _foreign_word_ratio(conllu: Conllu) -> float:
     )
 
     for token in tokens:
-        if token.feats and token.feats.get("Foreign") == "Yes":
-            foreign_words.add(token.form.lower())
+        if (
+            token.feats and token.feats.get("Foreign") == "Yes"
+        ) or token.deprel == "flat:foreign":
+            foreign_words.add(token.lemma)
 
-    return len(foreign_words) / (len(conllu.types) or 1)
+    store_path = "foreign_words_predicted.csv"
+
+    if write:
+        number_of_lines = 0
+        if os.path.exists(store_path):
+            with open(store_path, "r") as f:
+                number_of_lines = len(f.readlines())
+
+        with open(store_path, "a", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=None)  # type:ignore
+
+            writer.fieldnames = ["name", "word", "word_count"]
+            if number_of_lines == 0:
+                writer.writeheader()
+
+            for word in foreign_words:
+                data = {
+                    "name": conllu.path.stem.replace("_stripped.predicted", ""),
+                    "word": word,
+                    "word_count": len(tokens)
+                }
+                writer.writerow(data)
+
+    return len(foreign_words) / (len(conllu.lemmas) or 1)
 
 
 def _pronoun_coreference_average(

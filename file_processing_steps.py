@@ -6,7 +6,9 @@ from collections.abc import Iterable
 from typing import Literal
 
 import pymupdf4llm
+from contextvars import ContextVar
 from gloe import partial_transformer, transformer
+from uuid import UUID
 
 from schema import Document, DocumentResultModel, DocumentType, TaskType, ModelOptions
 import re
@@ -54,11 +56,8 @@ def read_markdown_file(path: str) -> Document:
 
 
 @transformer
-def convert_pdf_file_to_markdown_text(path: str) -> Document:
-    logger.info(f"Converting pdf file at {path} to markdown text")
-    text = pymupdf4llm.to_markdown(pathlib.Path(path))
-
-    return Document(text=text, path=path)
+def raise_non_markdown_error(path: str) -> Document:
+    raise ValueError(f"Sended non markdown file {path}")
 
 
 @transformer
@@ -76,14 +75,14 @@ def convert_pdf_file_to_markdown_file(path: str) -> pathlib.Path:
 
 @partial_transformer
 def save_document_text_on_markdown_file(
-    input: tuple[Document, str, str], doc_type: DocumentType
+    input: tuple[Document, str], doc_type: DocumentType, execution_uuid: ContextVar[UUID]
 ) -> None:
-    document, model, execution_uuid = input
+    document, model = input
 
     # replaces double dots to save correctly on Windows
     model_path = re.sub("/|:", "-", model)
     store_directory = (
-        f"./result/text-simplification/{doc_type}/{execution_uuid}/{model_path}"
+        f"./result/text-simplification/{doc_type}/{execution_uuid.get()}/{model_path}"
     )
 
     os.makedirs(
@@ -106,11 +105,15 @@ def save_file_without_formatting(document: Document) -> None:
     with open(new_path, "w") as stripped_file:
         stripped_file.write(document.text)
 
+
 @transformer
-def remove_think_tags(input:tuple[Document, ModelOptions]) -> tuple[Document, str]:
+def remove_think_tags(
+    input: tuple[Document, ModelOptions],
+) -> tuple[Document, ModelOptions]:
     document, model = input
     if model == "deepseek-r1:14b":
-        document.text = re.sub(re.compile("<think>.*?</think>",re.DOTALL), "", document.text)
+        document.text = re.sub(
+            re.compile("<think>.*?</think>", re.DOTALL), "", document.text
+        )
 
     return document, model
-

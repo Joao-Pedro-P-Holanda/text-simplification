@@ -1,9 +1,10 @@
 from collections import Counter
+from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from statistics import mean
 from itertools import chain
 from typing import Any
-import re
 from pyphen import Pyphen
 import string
 
@@ -13,6 +14,7 @@ TokenId = int | tuple[int, int] | float
 @dataclass
 class Conllu:
     sentences: list["Sentence"]
+    path: Path
     generator: str | None = None
     udpipe_model: str | None = None
     udpipe_model_licence: str | None = None
@@ -59,6 +61,17 @@ class Conllu:
     def types(self) -> set[str]:
         tokens = chain.from_iterable([sentence.tokens for sentence in self.sentences])
         texts = [token.form for token in tokens if token.form not in string.punctuation]
+        return set(texts)
+
+    @property
+    def lemmas(self) -> set[str]:
+        tokens = chain.from_iterable([sentence.tokens for sentence in self.sentences])
+        texts = [
+            token.lemma
+            for token in tokens
+            if token.lemma and token.lemma not in string.punctuation
+        ]
+
         return set(texts)
 
     @property
@@ -111,6 +124,7 @@ class Conllu:
 
             return Conllu(
                 sentences=Conllu._convert_blocks_to_sentences(blocks, decontract),
+                path=Path(path),
                 **metadata,
             )
 
@@ -255,14 +269,25 @@ class Conllu:
                 {field_for_index[idx]: _conversion_for_field(field_name, field_text)}
             )
 
+        # handle the "_" punctuation literal
+        if values.get("upos") and values["form"] is None:
+            values["form"] = "_"
+            values["lemma"] = "_"
+
         return Token(**values)
 
 
 @dataclass
-class Sentence:
+class Sentence(Sequence):
     id: int | str
     tokens: list["Token"]
     text: str
+
+    def __getitem__(self, index):
+        return self.tokens[index]
+
+    def __len__(self):
+        return self.tokens.__len__()
 
 
 @dataclass

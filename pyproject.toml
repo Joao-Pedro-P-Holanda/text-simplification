@@ -7,7 +7,6 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "gloe>=0.7.0",
     "httpx>=0.28.1",
-    "langchain[openai]>=0.3.24",
     "pymupdf>=1.25.5",
     "pymupdf4llm>=0.0.22",
     "python-dotenv>=1.1.0",
@@ -28,6 +27,10 @@ dependencies = [
     "nomic>=3.5.3",
     "deepeval>=3.7.2",
     "openai==2.8.1",
+    "langchain-openai>=1.1.7",
+    "langchain-text-splitters>=1.1.0",
+    "langgraph>=1.0.5",
+    "langchain>=1.2.3",
 ]
 
 [dependency-groups]
