@@ -3,51 +3,29 @@ from csv import DictWriter
 from pathlib import Path
 
 import bert_score
-from pydantic import BaseModel, computed_field
+from dotenv import load_dotenv
 from glob import glob
 from langchain_text_splitters import SentenceTransformersTokenTextSplitter
 
 
-class Document(BaseModel):
-    path: Path
-    text: str
-
-    @computed_field
-    @property
-    def name(self) -> str:
-        return self.path.stem
-
-
-def read_markdown_file(path: str) -> Document:
+def read_stripped_markdown_file(path: Path) -> str:
     with open(path, "r", encoding="utf-8") as file:
         text = "".join(file.readlines())
 
-    return Document(path=Path(path), text=text)
+    return text
 
 
 if __name__ == "__main__":
-    original_files = sorted(
-        [
-            Path(x)
-            for x in glob("./result-stripped/data/complete/2025_*_stripped.md")
-            + glob("./result-stripped/data/simplified/2025_*_stripped.md")
-        ],
-        key=lambda x: x.stem,
-    )
+    load_dotenv()
+    ORIGINAL_DATA_DIR = os.getenv("DATA_BASE_DIR","data")
+    RESULT_DIR = os.getenv("RESULTS_BASE_DIR",'result')
 
-    models = [
-        "cow-gemma2_tools-2b",
-        "phi4-latest",
-        "phi3-latest",
-        "llama3.2-latest",
-        "gemma3-4b",
-        "qwen2.5-14b",
-        "deepseek-r1-14b",
-        "granite3-dense-2b",
-        "granite3-dense-8b",
-        "gemini-2.5-flash-preview-04-17",
-        "gemini-2.5-pro-preview-05-06",
-    ]
+    original_files = {
+            Path(x).name.replace("_simplificado_stripped",""): Path(x)
+            for x in glob(f"./{ORIGINAL_DATA_DIR}/**/*simplificado_stripped.md",recursive=True)
+        }
+
+    generated_files_with_model_name = [(Path(x).parent.name ,Path(x)) for x in glob(f"./{RESULT_DIR}/**/*_stripped.md",recursive=True)]
 
     splitter = SentenceTransformersTokenTextSplitter(
         chunk_overlap=0,
@@ -56,52 +34,45 @@ if __name__ == "__main__":
         tokens_per_chunk=510,  # descontando 2 de 512 para os tokens especiais CLS e SEP
     )
 
-    with open("embeddings.csv", "a", newline="") as csvfile:
-        fieldnames = ["name", "model", "precision", "recall", "f1_score"]
+    with open("embeddings.csv", "w", newline="") as csvfile:
+        fieldnames = ["name", "model", "precision", "recall", "bert_score"]
         writer = DictWriter(csvfile, fieldnames=fieldnames)
         # checando se o arquivo não é vazio, não funciona em arquivos xlsx
         if os.stat("embeddings.csv").st_size == 0:
             writer.writeheader()
 
-        for file in original_files:
-            for model in models:
-                files_for_model = sorted(
-                    [
-                        Path(x)
-                        for x in glob(
-                            f"./result-stripped/text-simplification/generated-simplified/{model}/2025_*_stripped.md"
-                        )
-                    ],
-                    key=lambda x: x.stem,
-                )
-                pairs = list(zip(original_files, files_for_model))
+        for model,file in generated_files_with_model_name:
+            matching_original = original_files.get(file.name.replace("_stripped",""))
 
-                for pair in pairs[:1]:
-                    # Quebrando os dois textos utilizando o Tokenizer
-                    original_file = read_markdown_file(pair[0])
-                    generated_file = read_markdown_file(pair[1])
+            if not matching_original:
+                print(f"File {file.name} don't have a corresponding simplification, skipping")
+                continue
 
-                    original_chunks = splitter.split_text(original_file.text)
-                    generated_chunks = splitter.split_text(generated_file.text)
+            # Quebrando os dois textos utilizando o Tokenizer
+            original_simplification = read_stripped_markdown_file(matching_original)
+            generated_simplification = read_stripped_markdown_file(file)
 
-                    smaller_chunk_size = min(
-                        len(original_chunks), len(generated_chunks)
-                    )
+            original_chunks = splitter.split_text(original_simplification)
+            generated_chunks = splitter.split_text(generated_simplification)
 
-                    print(f"Calculando BERTScore para documento {original_file.name} com a versão do modelo {model}")
+            smaller_chunk_size = min(
+                len(original_chunks), len(generated_chunks)
+            )
 
-                    scores = bert_score.score(
-                        original_chunks[:smaller_chunk_size],
-                        generated_chunks[:smaller_chunk_size],
-                        lang="pt",
-                    )
+            print(f"Calculando BERTScore para documento {file.name} com a versão do modelo {model}")
 
-                    writer.writerow(
-                        {
-                            "name": original_file.name,
-                            "model": model,
-                            "precision": scores[0].mean().item(),
-                            "recall": scores[1].mean().item(),
-                            "f1_score": scores[2].mean().item(),
-                        }
-                    )
+            scores = bert_score.score(
+                original_chunks[:smaller_chunk_size],
+                generated_chunks[:smaller_chunk_size],
+                lang="pt",
+            )
+
+            writer.writerow(
+                {
+                    "name": file.name,
+                    "model": model,
+                    "precision": scores[0].mean().item(),
+                    "recall": scores[1].mean().item(),
+                    "bert_score": scores[2].mean().item(),
+                }
+            )
