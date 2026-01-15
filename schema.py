@@ -1,23 +1,32 @@
 from typing import Literal, TypedDict
 
-from langchain_core.documents import Document as LangchainDocument
 from pydantic import BaseModel, SecretStr, computed_field
 from pathlib import Path
 import re
 
 ModelOptions = Literal[
+    # Modelos Openweb UI
     "cow/gemma2_tools:2b",
     "phi4:latest",
     "phi3:latest",
     "llama3.2:latest",
     "gemma3:4b",
     "qwen2.5:14b",
-    "qwen2.5-coder:32b",
     "deepseek-r1:14b",
     "granite3-dense:2b",
     "granite3-dense:8b",
     "gemini-2.5-flash-preview-04-17",
     "gemini-2.5-pro-preview-05-06",
+    # Modelos OpenRouter
+    "google/gemma-3n-e4b-it",
+    "microsoft/phi-4",
+    "meta-llama/llama-3.2-3b-instruct",
+    "qwen/qwen3-14b",
+    "ibm-granite/granite-4.0-h-micro",
+    "deepseek/deepseek-v3.2",
+    "mistralai/ministral-8b",
+    "google/gemini-2.5-flash",
+    "google/gemini-2.5-pro",
 ]
 
 DocumentType = Literal[
@@ -25,7 +34,7 @@ DocumentType = Literal[
 ]
 
 TaskType = Literal[
-    "readability-indexes", "d-sari", "nilc-metrix", "embedding-similarity", "ud-pipe"
+    "readability-indexes", "nilc-metrix", "embedding-similarity", "ud-pipe"
 ]
 
 
@@ -197,4 +206,3 @@ class UDNilcMetrics(DocumentResultModel):
     long_sentence_ratio: float
 
     foreign_word_ratio: float
-
