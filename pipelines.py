@@ -35,33 +35,34 @@ DATA_DIR = Path(os.path.join(os.path.dirname(__file__), "data"))
 def is_markdown(path: str) -> bool:
     return path.endswith(".md")
 
+
 uuid_context: ContextVar[UUID] = ContextVar("uuid_context")
 
 simplify_pdf_files_with_model: Transformer[
     tuple[list[str], ModelOptions], list[Any]
 ] = (
-        set_execution_uuid(uuid_context=uuid_context)
-        >> zip_to_one
-        >> (
-            Map(
-                forward[tuple[str, ModelOptions]]()
-                >> (
-                    pick_first
-                    >> is_markdown.Then(read_markdown_file).Else(raise_non_markdown_error),
-                    pick_second,
-                )
+    set_execution_uuid(uuid_context=uuid_context)
+    >> zip_to_one
+    >> (
+        Map(
+            forward[tuple[str, ModelOptions]]()
+            >> (
+                pick_first
+                >> is_markdown.Then(read_markdown_file).Else(raise_non_markdown_error),
+                pick_second,
             )
         )
-        >> Map(
-    generate_chunks_for_text
-    >> request_simplified_text_from_chat_model(
-        prompt_file="prompt_simplify_document.txt",
     )
-    >> remove_think_tags
-    >> save_document_text_on_markdown_file(
-        doc_type="generated-simplified", execution_uuid=uuid_context
+    >> Map(
+        generate_chunks_for_text
+        >> request_simplified_text_from_chat_model(
+            prompt_file="prompt_simplify_document.txt",
+        )
+        >> remove_think_tags
+        >> save_document_text_on_markdown_file(
+            doc_type="generated-simplified", execution_uuid=uuid_context
+        )
     )
-)
 )
 
 extract_udpipe_nilc_metrix_from_original_complete_texts: Transformer[
@@ -88,7 +89,7 @@ extract_metrics_from_generated_texts_port_tokenizer: Transformer[list[str], None
     >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
     >> extract_document_statistics_port_parser
 ) >> store_results_as_csv(
-    task_type="readability-indexes", doc_type="generated-simplified", mode="a"
+    task_type="readability-indexes", doc_type="generated-simplified", mode="w"
 )
 
 extract_metrics_from_complete_texts_port_tokenizer: Transformer[list[str], None] = Map(
@@ -97,7 +98,7 @@ extract_metrics_from_complete_texts_port_tokenizer: Transformer[list[str], None]
     >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
     >> extract_document_statistics_port_parser
 ) >> store_results_as_csv(
-    task_type="readability-indexes", doc_type="reference-complete", mode="a"
+    task_type="readability-indexes", doc_type="reference-complete", mode="w"
 )
 
 extract_metrics_from_already_simplified_texts_port_tokenizer: Transformer[
@@ -108,5 +109,5 @@ extract_metrics_from_already_simplified_texts_port_tokenizer: Transformer[
     >> list_complex_words(frequencies_file="./data/frequencias_todos_os_corpora.pkl")
     >> extract_document_statistics_port_parser
 ) >> store_results_as_csv(
-    task_type="readability-indexes", doc_type="reference-simplified", mode="a"
+    task_type="readability-indexes", doc_type="reference-simplified", mode="w"
 )
