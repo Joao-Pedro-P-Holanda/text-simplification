@@ -529,7 +529,7 @@ def _foreign_word_ratio(conllu: Conllu, write: bool = True) -> float:
         with open(store_path, "a", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=None)  # type:ignore
 
-            writer.fieldnames = ["name", "word"]
+            writer.fieldnames = ["name", "word", "word_count"]
             if number_of_lines == 0:
                 writer.writeheader()
 
@@ -537,6 +537,7 @@ def _foreign_word_ratio(conllu: Conllu, write: bool = True) -> float:
                 data = {
                     "name": conllu.path.stem.replace("_stripped.predicted", ""),
                     "word": word,
+                    "word_count": len(tokens)
                 }
                 writer.writerow(data)
 
