@@ -6,11 +6,10 @@ O prompt utilizado pelo modelo foi baseado no disponível [neste link](https://g
 
 O pacote [gloe](https://gloe.ideos.com.br/index.html) também foi utilizado, ele serve como um utilitário para organizar funções em um DAG, facilitando manutenção e composição, os decoradores `@transformer`, `@partial_transformer` e outros não tem relação com transformers do Hugging Face.
 
-## Execução
+## Configuração
 
 - Criar um ambiente virtual `python -m venv venv` ou outro comando dependendo do gerenciador de pacotes utilizado
 - Instalar as dependências com `pip install -r requirements.txt`, caso utilize o _uv_ o comando é apenas `uv sync`
-- Adicionar a chave de API em `LLM_API_KEY` no seu arquivo .env
-- Executar o script: `python main.py`
+- Configurar a chave de API em `LLM_API_KEY` e a url do serviço em `OLLAMA_HOST` no seu arquivo .env, a implementação suporta serviços compatíveis com interface da OpenAI (p. ex. Open WebUI, OpenRouter, etc.)
 
 
