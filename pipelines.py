@@ -56,7 +56,7 @@ simplify_pdf_files_with_model: Transformer[
     >> Map(
         generate_chunks_for_text
         >> request_simplified_text_from_chat_model(
-            prompt_file="prompt_simplify_document.txt",
+            prompt_file="prompt_simplify_and_summarize_document.txt",
         )
         >> remove_think_tags
         >> save_document_text_on_markdown_file(

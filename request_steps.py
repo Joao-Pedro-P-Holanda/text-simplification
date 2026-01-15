@@ -1,7 +1,5 @@
-from itertools import chain
 import logging
 from functools import lru_cache
-from uuid import uuid1
 
 from gloe import partial_transformer, transformer
 from langchain.agents import AgentState, create_agent
@@ -55,12 +53,15 @@ def request_simplified_text_from_chat_model(
 
     chunks = document.langchain_documents
 
-    for chunk in chunks[:-1]:
-        _ = llm_chain.invoke({"messages": [HumanMessage(chunk)]}, config)
+    response = ""
 
-    response = llm_chain.invoke({"messages": [HumanMessage(chunks[-1])]}, config)
+    for chunk in chunks:
+        part = llm_chain.invoke({"messages": [HumanMessage(chunk)]}, config)[
+            "messages"
+        ][-1].content
+        response += part + "\n"
 
-    return document.model_copy(update={"text": response["messages"][-1].content}), model
+    return document.model_copy(update={"text": response}), model
 
 
 @transformer
@@ -130,11 +131,7 @@ def _read_prompt_file(prompt_file: str) -> str:
 def _llm_for_model_name(model: ModelOptions) -> BaseChatModel:
     temperature = 1
     match model:
-        case (
-            "gemini-2.5-flash-preview-04-17"
-            | "gemini-2.5-pro-preview-05-06"
-            | "gemini-2.5-pro"
-        ):
+        case "gemini-2.5-flash-preview-04-17" | "gemini-2.5-pro-preview-05-06":
             return ChatGoogleGenerativeAI(
                 model=model,
                 temperature=temperature,
@@ -142,20 +139,26 @@ def _llm_for_model_name(model: ModelOptions) -> BaseChatModel:
                 max_retries=1,
             )
         case (
+            # open web ui
             "cow/gemma2_tools:2b"
             | "phi4:latest"
             | "phi3:latest"
             | "llama3.2:latest"
             | "gemma3:4b"
             | "qwen2.5:14b"
-            | "qwen/qwen3-4b:free"
             | "deepseek-r1:14b"
-            | "mistralai/ministral-8b"
             | "granite3-dense:2b"
             | "granite3-dense:8b"
-            | "google/gemini-2.5-flash"
-            | "qwen/qwen3-14b"
+            # open router
+            | "google/gemma-3n-e4b-it"
             | "microsoft/phi-4"
+            | "meta-llama/llama-3.2-3b-instruct"
+            | "qwen/qwen3-14b"
+            | "ibm-granite/granite-4.0-h-micro"
+            | "deepseek/deepseek-v3.2"
+            | "mistralai/ministral-8b"
+            | "google/gemini-2.5-flash"
+            | "google/gemini-2.5-pro"
         ):
             langchain_model = ChatOpenAI(
                 model=model,
