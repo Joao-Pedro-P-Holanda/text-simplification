@@ -201,8 +201,6 @@ class UDNilcMetrics(DocumentResultModel):
     personal_pronoun_ratio: float
     coreference_pronoun_ratio: float
     demonstrative_pronoun_ratio: float
-    logical_operator_ratio: float
-    connective_ratio: float
     long_sentence_ratio: float
 
     foreign_word_ratio: float
