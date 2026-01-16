@@ -12,4 +12,14 @@ O pacote [gloe](https://gloe.ideos.com.br/index.html) também foi utilizado, ele
 - Instalar as dependências com `pip install -r requirements.txt`, caso utilize o _uv_ o comando é apenas `uv sync`
 - Configurar a chave de API em `LLM_API_KEY` e a url do serviço em `OLLAMA_HOST` no seu arquivo .env, a implementação suporta serviços compatíveis com interface da OpenAI (p. ex. Open WebUI, OpenRouter, etc.)
 
+## Métricas Morfossintáticas
+
+Para avaliar a complexidade textual com métricas morfossintáticas, os textos analisados passaram por um pré-processamento:
+a sentenciação foi feita com o projeto [portSentencer](https://github.com/LuceleneL/portSentencer)
+e a tokenização para o formato Conllu foi feita com o [portTokenizer](https://github.com/LuceleneL/portTokenizer) . 
+
+O script utilizado para executar o PortParser pelo Google Colab está disponível 
+[neste link](https://colab.research.google.com/drive/1HoyrhzemKY2rfKWEYISUgme_tIPlIgJ2?usp=sharing)
+
+
 
